@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flowork Mobile Stream</title>
+    <style>
+        body {
+            margin: 0; padding: 0; background-color: #000;
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; overflow: hidden; font-family: 'Segoe UI', sans-serif;
+        }
+
+        video { width: 100%; height: 100%; object-fit: contain; cursor: pointer; }
+
+        #loading { position: absolute; color: #00e5ff; font-size: 14px; font-weight: bold; display: flex; flex-direction: column; align-items: center; gap: 10px; z-index: 10; }
+        .spinner { width: 24px; height: 24px; border: 3px solid rgba(0, 229, 255, 0.3); border-top: 3px solid #00e5ff; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        #header-card {
+            position: absolute; top: 0; right: 0; height: 100vh; width: 32px;
+            display: flex; flex-direction: column; align-items: center;
+            background: rgba(10, 10, 10, 0.85); padding: 10px 0;
+            border-left: 1px solid rgba(0, 229, 255, 0.2); gap: 12px; z-index: 100;
+            transition: opacity 0.3s; opacity: 0.8;
+        }
+
+        #header-card:hover { opacity: 1; }
+
+        .header-btn {
+            background: transparent; border: none; color: #ccc;
+            width: 28px; height: 28px; cursor: pointer; font-size: 14px;
+            display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;
+        }
+
+        .header-btn:hover { color: #00e5ff; background: rgba(0, 229, 255, 0.1); border-radius: 4px; }
+        .header-btn:active { transform: scale(0.85); }
+
+        .divider { width: 15px; height: 1px; background: rgba(255, 255, 255, 0.1); }
+
+        .panel-ui {
+            position: absolute; right: 40px; background: rgba(15, 15, 15, 0.95);
+            border: 1px solid #333; border-radius: 8px; padding: 15px; display: none;
+            flex-direction: column; gap: 10px; z-index: 99; color: white; font-size: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.8);
+        }
+
+        #scroll-config-panel { top: 150px; width: 180px; }
+
+        /* [PERBAIKAN] Menyembunyikan total panel transfer agar UI profesional */
+        #transfer-panel { top: 200px; width: 220px; display: none !important; }
+
+        .config-row { display: flex; justify-content: space-between; align-items: center; }
+        .config-input { width: 50px; background: #222; color: #00e5ff; border: 1px solid #444; border-radius: 4px; text-align: center; padding: 3px; font-size: 12px; }
+
+        #action-toast {
+            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: rgba(10, 10, 10, 0.85); border: 1px solid #00e5ff; color: #00e5ff;
+            padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: bold;
+            display: none; z-index: 100; pointer-events: none; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            letter-spacing: 0.5px;
+        }
+
+        .btn-action { background:#3DDC84; border:none; border-radius:4px; cursor:pointer; font-weight:bold; padding:6px; color:black; transition:0.2s;}
+        .btn-action:hover { background: #2ebd6a; }
+        .btn-info { background:#00e5ff; border:none; border-radius:4px; cursor:pointer; font-weight:bold; padding:6px; color:black; transition:0.2s;}
+        .btn-info:hover { background: #00b8cc; }
+    </style>
+    <script src="./jmuxer.min.js"></script>
+</head>
+<body>
+    <div id="loading">
+        <div class="spinner"></div>
+        <span id="loading-text">📡 Loading WebSocket Stream...</span>
+    </div>
+
+    <div id="action-toast"></div>
+
+    <div id="scroll-config-panel" class="panel-ui">
+        <div style="font-weight: bold; color: #00e5ff; text-align: center; border-bottom: 1px solid #333; padding-bottom: 5px; margin-bottom: 5px;">Unified Human Bot</div>
+        <div class="config-row" title="Minimal delay antar aksi">Min Jeda (sec): <input type="number" id="cfg-min" class="config-input" value="3"></div>
+        <div class="config-row" title="Maksimal delay antar aksi">Max Jeda (sec): <input type="number" id="cfg-max" class="config-input" value="8"></div>
+
+        <div style="font-weight: bold; color: #3DDC84; font-size: 10px; margin-top: 5px; border-bottom: 1px dashed #444;">Distribusi Pengacakan (Mixer)</div>
+        <div class="config-row" title="Total semua aksi dalam 1 siklus bot">Total Aksi: <input type="number" id="cfg-total" class="config-input" value="10"></div>
+        <div class="config-row" title="Dari total aksi, berapa kali mau scroll ke atas">Scroll Atas: <input type="number" id="cfg-up" class="config-input" value="2"></div>
+        <div class="config-row" title="Dari total aksi, berapa kali mau nge-Swipe L/R">Sesi Swipe: <input type="number" id="cfg-lr-count" class="config-input" value="3"></div>
+
+        <div style="font-weight: bold; color: #ff9800; font-size: 10px; margin-top: 5px; border-bottom: 1px dashed #444;">Perilaku Saat Sesi Swipe Aktif</div>
+        <div class="config-row" title="Lama diam melihat gambar sebelum berbalik">Wait (sec): <input type="number" id="cfg-lr-wait" class="config-input" value="5"></div>
+    </div>
+
+    <div id="transfer-panel" class="panel-ui">
+        <div style="font-weight: bold; color: #3DDC84; text-align: center; border-bottom: 1px solid #333; padding-bottom: 5px;">Transfer 1-Arah (PC ➡️ HP)</div>
+        <div style="font-size: 10px; color:#aaa; margin-top:10px;">1. Auto-Paste Teks</div>
+        <button id="btn-sync-pc-to-hp" class="btn-action" style="margin-top:5px;">📋 Paste dari Clipboard PC</button>
+        <div style="display:none;">
+            <div style="font-size: 10px; color:#aaa; margin-top:5px;">Paste Text (Ketik ke Layar Aktif)</div>
+            <input type="text" id="transfer-text" class="config-input" style="width: 100%; box-sizing:border-box; margin:5px 0;" placeholder="Ketik atau paste text disini...">
+            <button id="btn-send-text" class="btn-action">✍️ Kirim Teks</button>
+        </div>
+        <div style="font-size: 10px; color:#aaa; margin-top:20px;">2. Push File (/sdcard/Download)</div>
+        <button id="btn-push-file" class="btn-info" style="margin-top:5px;">📂 Pilih File & Push</button>
+    </div>
+
+    <div id="header-card">
+        <button id="btn-stop" class="header-btn" title="Stop Connection" style="color: #ff4444;">⏹️</button>
+        <button id="btn-refresh" class="header-btn" title="Refresh Stream">🔄</button>
+
+        <div class="divider"></div>
+
+        <button id="btn-up" class="header-btn" title="Scroll Atas">⬆️</button>
+        <button id="btn-down" class="header-btn" title="Scroll Bawah">⬇️</button>
+        <button id="btn-left" class="header-btn" title="Swipe Kiri">⬅️</button>
+        <button id="btn-right" class="header-btn" title="Swipe Kanan">➡️</button>
+
+        <div class="divider"></div>
+
+        <button id="btn-scroll-settings" class="header-btn" title="Open Config" style="color: #ff9800;">⚙️</button>
+        <button id="btn-auto-play" class="header-btn" title="Start Unified Bot">▶️</button>
+
+        <div class="divider"></div>
+        <button id="btn-transfer-menu" class="header-btn" title="Transfer Text & Files" style="color: #3DDC84;">📁</button>
+
+        <div class="divider"></div>
+
+        <button id="btn-home" class="header-btn" title="Home Button" style="color: #00e5ff;">🏠</button>
+
+        <div class="divider"></div>
+        <button id="btn-inspector" class="header-btn" title="App Inspector & Frida (Engine Only)" style="color: #ff4d4d;">🕵️</button>
+    </div>
+
+    <video id="player" autoplay muted playsinline></video>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const serial = urlParams.get('serial');
+
+        if (serial) {
+            const jmuxer = new JMuxer({ node: 'player', mode: 'video', flushingTime: 0, fps: 60, debug: false, clearBuffer: false });
+
+            let ws;
+            function connectWebSocket() {
+                ws = new WebSocket(`ws://127.0.0.1:8080/?serial=${serial}`);
+                ws.binaryType = 'arraybuffer';
+                ws.onopen = () => { document.getElementById('loading').style.display = 'none'; };
+                ws.onmessage = (event) => { jmuxer.feed({ video: new Uint8Array(event.data) }); };
+                ws.onclose = () => {
+                    document.getElementById('loading').style.display = 'flex';
+                    document.getElementById('loading-text').innerText = '🔄 Reconnecting...';
+                    setTimeout(connectWebSocket, 1000);
+                };
+            }
+
+            connectWebSocket();
+
+            const player = document.getElementById('player');
+            let isDragging = false;
+            let startCoord = null;
+            let startTime = 0;
+
+            const actionToast = document.getElementById('action-toast');
+            function showAction(msg) { actionToast.innerText = msg; actionToast.style.display = 'block'; }
+            function hideAction() { actionToast.style.display = 'none'; }
+
+            function getTrueCoordinates(e) {
+                const rect = player.getBoundingClientRect();
+                const vw = player.videoWidth || 1080;
+                const vh = player.videoHeight || 2400;
+                const videoRatio = vw / vh;
+                const boxRatio = rect.width / rect.height;
+                let actualWidth = rect.width;
+                let actualHeight = rect.height;
+                let offsetX = 0; let offsetY = 0;
+
+                if (videoRatio > boxRatio) {
+                    actualHeight = rect.width / videoRatio;
+                    offsetY = (rect.height - actualHeight) / 2;
+                } else {
+                    actualWidth = rect.height * videoRatio;
+                    offsetX = (rect.width - actualWidth) / 2;
+                }
+
+                const trueX = e.clientX - rect.left - offsetX;
+                const trueY = e.clientY - rect.top - offsetY;
+
+                if (trueX < 0 || trueX > actualWidth || trueY < 0 || trueY > actualHeight) return null;
+                return { px: trueX / actualWidth, py: trueY / actualHeight };
+            }
+
+            player.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                startTime = Date.now();
+                startCoord = getTrueCoordinates(e);
+            });
+
+            window.addEventListener('mouseup', (e) => {
+                if (!isDragging || !startCoord) return;
+                isDragging = false;
+                let endCoord = getTrueCoordinates(e);
+                if (!endCoord) {
+                    const rect = player.getBoundingClientRect();
+                    endCoord = { px: (e.clientX - rect.left) / rect.width, py: (e.clientY - rect.top) / rect.height };
+                }
+
+                const duration = Date.now() - startTime;
+                const distance = Math.hypot(endCoord.px - startCoord.px, endCoord.py - startCoord.py);
+
+                if (distance < 0.02) {
+                    if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'click', px: startCoord.px, py: startCoord.py }));
+                } else {
+                    if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'swipe', px1: startCoord.px, py1: startCoord.py, px2: endCoord.px, py2: endCoord.py, duration: Math.max(100, Math.min(duration, 2000)) }));
+                }
+            });
+
+            let isWheeling = false;
+            player.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                if (isWheeling) return;
+                isWheeling = true;
+                setTimeout(() => { isWheeling = false; }, 350);
+
+                const px1 = 0.5; const py1 = 0.5;
+                let py2 = e.deltaY > 0 ? 0.3 : 0.7;
+                if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'swipe', px1, py1, px2: px1, py2, duration: 150 }));
+            }, { passive: false });
+
+            window.addEventListener('keydown', (e) => {
+                if (!ws || ws.readyState !== WebSocket.OPEN) return;
+                if (e.ctrlKey || e.altKey || e.metaKey) return;
+                if (e.key === 'Backspace') ws.send(JSON.stringify({ type: 'keyevent', keycode: 67 }));
+                else if (e.key === 'Enter') ws.send(JSON.stringify({ type: 'keyevent', keycode: 66 }));
+                else if (e.key.length === 1) ws.send(JSON.stringify({ type: 'text', text: e.key }));
+            });
+
+            // =========================================================
+            // FITUR BARU: NATIVE CTRL+V MENDENGARKAN EVENT KEYBOARD
+            // =========================================================
+            window.addEventListener('paste', async (e) => {
+                // Cegah kelakuan default browser
+                e.preventDefault();
+                // Sedot teks yang baru saja di Ctrl+V oleh user
+                let pastedText = (e.clipboardData || window.clipboardData).getData('text');
+
+                if(pastedText) {
+                    showAction("⏳ Pasting text to device...");
+                    try {
+                        // Tembakkan langsung ke engine backend tanpa babibu
+                        const res = await window.parent.floworkDesktop.nativePaste(serial, pastedText);
+                        if(res.success) {
+                            showAction("✅ Copas Berhasil!");
+                            setTimeout(hideAction, 2000);
+                        }
+                    } catch(err) {
+                        alert("Error: " + err.message);
+                        hideAction();
+                    }
+                }
+            });
+
+
+            // [PERBAIKAN] Fungsi swipe manual diupgrade mendukung parameter custom duration agar dorongan kuat
+            function sendSimulatedSwipe(px1, py1, px2, py2, customDur) {
+                let dur = customDur || 300;
+                if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'swipe', px1, py1, px2, py2, duration: dur }));
+            }
+
+            const configPanel = document.getElementById('scroll-config-panel');
+            // Transfer menu tombol tetap ada tapi karena kita tidak butuh form, kliknya nggak usah buka apa-apa atau buka yang penting saja.
+
+            document.getElementById('btn-scroll-settings').onclick = () => {
+                configPanel.style.display = configPanel.style.display === 'flex' ? 'none' : 'flex';
+            };
+
+            // Karena transfer UI dimatikan, klik logo folder saya bypass langsung buat push file ke /sdcard/Download
+            document.getElementById('btn-transfer-menu').onclick = async () => {
+                configPanel.style.display = 'none';
+                try {
+                    const localFile = await window.parent.floworkDesktop.selectFile();
+                    if(!localFile) return;
+
+                    const fileName = localFile.split('\\').pop().split('/').pop();
+                    const remotePath = `/sdcard/Download/${fileName}`;
+
+                    showAction(`⏳ Pushing File ${fileName}...`);
+                    const res = await window.parent.floworkDesktop.adbPush(serial, localFile, remotePath);
+                    if(res.success) {
+                        alert(`✅ File berhasil di-push ke HP!\nPath: ${remotePath}`);
+                        hideAction();
+                    } else { alert("❌ Gagal push file."); hideAction(); }
+                } catch(e) { alert("Error: " + e.message); hideAction(); }
+            };
+
+            // =========================================================
+            // MESIN BOT & BUG FIX SWIPE DORONGAN KUAT
+            // =========================================================
+            let autoBotTimer = null; let engineState = 'idle'; let actionSequence = []; let currentActionIndex = 0;
+
+            function stopBot() {
+                engineState = 'idle';
+                document.getElementById('btn-auto-play').innerHTML = '▶️';
+                document.getElementById('btn-auto-play').style.color = '#ccc';
+                hideAction();
+                if (autoBotTimer) clearTimeout(autoBotTimer);
+            }
+
+            function startUnifiedBot() {
+                stopBot();
+                engineState = 'running';
+                document.getElementById('btn-auto-play').style.color = '#00e5ff';
+                configPanel.style.display = 'none';
+
+                let total = parseInt(document.getElementById('cfg-total').value) || 10;
+                let upCount = parseInt(document.getElementById('cfg-up').value) || 2;
+                let lrCount = parseInt(document.getElementById('cfg-lr-count').value) || 3;
+
+                if (upCount + lrCount > total) { let half = Math.floor(total / 2); upCount = Math.min(upCount, half); lrCount = Math.min(lrCount, total - upCount); }
+                let downCount = total - upCount - lrCount;
+
+                actionSequence = [];
+                for(let i=0; i < upCount; i++) actionSequence.push('up');
+                for(let i=0; i < lrCount; i++) actionSequence.push('lr');
+                for(let i=0; i < downCount; i++) actionSequence.push('down');
+
+                for (let i = actionSequence.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [actionSequence[i], actionSequence[j]] = [actionSequence[j], actionSequence[i]]; }
+                currentActionIndex = 0; processNextAction();
+            }
+
+            function processNextAction() {
+                if (engineState !== 'running') return;
+                if (currentActionIndex >= actionSequence.length) { showAction('✅ Siklus Selesai.'); setTimeout(stopBot, 2000); return; }
+                let action = actionSequence[currentActionIndex];
+
+                if (action === 'up' || action === 'down') {
+                    performVertical(action, () => { currentActionIndex++; scheduleNext(); });
+                } else if (action === 'lr') {
+                    performHorizontalRoutine(() => { currentActionIndex++; scheduleNext(); });
+                }
+            }
+
+            function performVertical(direction, onComplete) {
+                let px1 = 0.4 + (Math.random() * 0.2); let py1 = 0.5; let py2 = 0.5;
+                if (direction === 'up') { py1 = 0.2 + (Math.random() * 0.1); py2 = 0.7 + (Math.random() * 0.1); }
+                else { py1 = 0.7 + (Math.random() * 0.1); py2 = 0.2 + (Math.random() * 0.1); }
+                let px2 = px1 + (Math.random() * 0.04 - 0.02);
+                const duration = 300 + Math.floor(Math.random() * 500);
+
+                if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'swipe', px1: px1, py1: py1, px2: px2, py2: py2, duration: duration }));
+                let dirIcon = direction === 'up' ? '⬆️ Scroll Atas' : '⬇️ Scroll Bawah';
+                showAction(`${dirIcon} (${currentActionIndex + 1}/${actionSequence.length})`);
+                onComplete();
+            }
+
+            function performHorizontalRoutine(onComplete) {
+                let waitSec = parseInt(document.getElementById('cfg-lr-wait').value) || 5;
+
+                // [BUG FIX] Koordinat ditarik secara ekstrem: 0.95 (kanan) lempar ke 0.05 (kiri). Durasi dibikin super cepat (150-200ms) untuk dorongan 'Fling'
+                let px1 = 0.95 - (Math.random() * 0.05);
+                let px2 = 0.05 + (Math.random() * 0.05);
+                let py1 = 0.4 + (Math.random() * 0.2);
+                let py2 = py1 + (Math.random() * 0.04 - 0.02);
+                let duration = 150 + Math.floor(Math.random() * 50);
+
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({ type: 'swipe', px1: px1, py1: py1, px2: px2, py2: py2, duration: duration }));
+                }
+
+                showAction(`🎠 Swipe Kiri Kuat -> Menunggu ${waitSec}s...`);
+
+                autoBotTimer = setTimeout(() => {
+                    if (engineState !== 'running') return;
+
+                    // Kembalikan swipe dengan kekuatan yang sama dari kiri (0.05) ke kanan (0.95)
+                    let rx1 = 0.05 + (Math.random() * 0.05);
+                    let rx2 = 0.95 - (Math.random() * 0.05);
+                    let ry1 = 0.4 + (Math.random() * 0.2);
+                    let ry2 = ry1 + (Math.random() * 0.04 - 0.02);
+                    let rDuration = 150 + Math.floor(Math.random() * 50);
+
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({ type: 'swipe', px1: rx1, py1: ry1, px2: rx2, py2: ry2, duration: rDuration }));
+                    }
+
+                    showAction(`🎠 Swipe Kanan Kuat (Kembali)`);
+                    autoBotTimer = setTimeout(() => { onComplete(); }, rDuration + 200);
+                }, waitSec * 1000);
+            }
+
+            function scheduleNext() {
+                const rawMin = parseInt(document.getElementById('cfg-min').value) || 3;
+                const rawMax = parseInt(document.getElementById('cfg-max').value) || 8;
+                const randomDelaySec = Math.min(rawMin, rawMax) + Math.random() * Math.abs(rawMax - rawMin);
+                const nextDelayMs = Math.floor(randomDelaySec * 1000);
+                document.getElementById('btn-auto-play').innerHTML = '⏳';
+
+                autoBotTimer = setTimeout(() => {
+                    if (engineState === 'running') { document.getElementById('btn-auto-play').innerHTML = '⏸️'; processNextAction(); }
+                }, nextDelayMs);
+            }
+
+            document.getElementById('btn-auto-play').onclick = () => { if (engineState === 'running') { stopBot(); } else { startUnifiedBot(); } };
+            document.getElementById('btn-stop').onclick = () => { if (ws) ws.close(); };
+            document.getElementById('btn-refresh').onclick = () => { window.location.reload(); };
+
+            // [BUG FIX] Tombol swipe manual juga di-upgrade durasinya ke 150ms dengan rentang koordinat 0.95 s.d 0.05
+            document.getElementById('btn-up').onclick = () => sendSimulatedSwipe(0.5, 0.3, 0.5, 0.8, 300);
+            document.getElementById('btn-down').onclick = () => sendSimulatedSwipe(0.5, 0.8, 0.5, 0.3, 300);
+            document.getElementById('btn-left').onclick = () => sendSimulatedSwipe(0.95, 0.5, 0.05, 0.5, 150);
+            document.getElementById('btn-right').onclick = () => sendSimulatedSwipe(0.05, 0.5, 0.95, 0.5, 150);
+
+            document.getElementById('btn-home').onclick = () => { if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'keyevent', keycode: 3 })); };
+            document.getElementById('btn-inspector').onclick = () => { window.parent.postMessage({ type: 'OPEN_INSPECTOR', serial: serial }, '*'); };
+
+        }
+    </script>
+</body>
+</html>

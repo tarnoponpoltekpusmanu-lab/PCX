@@ -1,0 +1,36 @@
+{
+  "name": "flowork-desktop-ui",
+  "version": "1.0.0",
+  "description": "Flowork OS Standalone Webview UI",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build:portable": "electron-builder --win portable",
+    "postbuild:portable": "move dist\\gui.exe .\\"
+  },
+  "author": "Flowork OS",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.3.3",
+    "electron-builder": "^24.13.3",
+    "electron-packager": "^17.1.2"
+  },
+  "build": {
+    "appId": "com.floworkos.webview",
+    "productName": "Flowork OS",
+    "asar": true,
+    "asarUnpack": [
+      "FLOWORK_EXTENTION/**/*"
+    ],
+    "win": {
+      "target": "portable",
+      "icon": "icon.png"
+    },
+    "portable": {
+      "artifactName": "gui.exe"
+    }
+  },
+  "dependencies": {
+    "ws": "^8.20.0"
+  }
+}

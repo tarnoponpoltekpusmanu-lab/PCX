@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flowork OS - Multi-Bot Dashboard</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #121212; color: white; overflow: hidden; }
+        #control-panel { display: flex; background: #1e1e1e; padding: 10px 15px; min-height: 60px; align-items: center; border-bottom: 2px solid #007acc; box-sizing: border-box; gap: 8px; flex-wrap: wrap; z-index: 100; position: relative;}
+        .btn { padding: 6px 12px; border: none; color: white; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; transition: 0.2s; }
+        .btn-blue { background: #007acc; } .btn-blue:hover { background: #005f9e; }
+        .btn-dark { background: #333; border: 1px solid #555; } .btn-dark:hover { background: #444; }
+        .btn-green { background: #28a745; } .btn-green:hover { background: #218838; }
+        .btn-red { background: #dc3545; } .btn-red:hover { background: #c82333; }
+        .btn-warn { background: #ff9800; color: black; } .btn-warn:hover { background: #e68a00; }
+
+        .input-dark { padding: 6px; background: #2d2d2d; color: white; border: 1px solid #555; border-radius: 4px; outline: none; font-size: 12px; }
+        .input-dark:focus { border-color: #007acc; }
+        #url-input { width: 150px; }
+        .timer-input { width: 40px; text-align: center; }
+
+        .separator { width: 1px; height: 25px; background: #444; margin: 0 2px; }
+        .group { display: flex; align-items: center; gap: 5px; background: #1a1a1a; padding: 4px 8px; border-radius: 4px; border: 1px solid #333;}
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loading-icon { display: inline-block; animation: spin 1s linear infinite; font-size: 10px; margin-right: 4px; }
+
+        #profile-sidebar { position: fixed; right: 0; top: 60px; width: 260px; height: calc(100vh - 60px); background: #1a1a1a; border-left: 2px solid #007acc; transform: translateX(100%); transition: transform 0.3s ease; z-index: 99; display: flex; flex-direction: column; box-sizing: border-box; }
+        #profile-sidebar.open { transform: translateX(0); }
+        .sidebar-header { background: #2d2d2d; padding: 10px; font-weight: bold; text-align: center; border-bottom: 1px solid #444; }
+        .sidebar-content { padding: 10px; overflow-y: auto; flex-grow: 1; }
+        .profile-item { display: flex; justify-content: space-between; align-items: center; background: #333; padding: 8px; margin-bottom: 5px; border-radius: 4px; cursor: pointer; border: 1px solid #444; }
+        .profile-item:hover { background: #444; border-color: #007acc; }
+
+        #ctx-menu { display: none; position: absolute; background: #2d2d2d; border: 1px solid #555; border-radius: 4px; z-index: 10000; box-shadow: 0 4px 6px rgba(0,0,0,0.5); }
+        .ctx-item { padding: 8px 12px; font-size: 12px; cursor: pointer; color: #ff4d4d; font-weight: bold; }
+        .ctx-item:hover { background: #444; }
+
+        #grid-ui-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 50;
+        }
+        .grid-dummy-card {
+            position: absolute; background-color: transparent; border-radius: 6px; box-sizing: border-box; pointer-events: auto; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.5); border: 1px solid #444;
+        }
+        .card-header {
+            height: 35px; background: #007acc; color: white; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; font-size: 12px; font-weight: bold; cursor: grab; user-select: none;
+        }
+        .card-header:active { cursor: grabbing; }
+
+        .card-header-icon { width: 18px; height: 18px; }
+
+        .card-header-menu { cursor: pointer; color: black; background: #ff9800; border: none; border-radius: 4px; padding: 2px 6px; font-size: 10px; font-weight: bold; transition: 0.2s; margin-right: 2px; }
+        .card-header-menu:hover { background: #e68a00; }
+
+        .card-header-back { cursor: pointer; color: white; background: #6c757d; border: none; border-radius: 4px; padding: 2px 6px; font-size: 10px; font-weight: bold; transition: 0.2s; margin-right: 2px; }
+        .card-header-back:hover { background: #5a6268; }
+
+        .card-header-reload { cursor: pointer; color: white; background: #17a2b8; border: none; border-radius: 4px; padding: 2px 6px; font-size: 10px; font-weight: bold; transition: 0.2s; margin-right: 2px; }
+        .card-header-reload:hover { background: #138496; }
+
+        .card-header-reload-ext { cursor: pointer; color: white; background: #28a745; border: none; border-radius: 4px; padding: 2px 6px; font-size: 10px; font-weight: bold; transition: 0.2s; margin-right: 2px; }
+        .card-header-reload-ext:hover { background: #218838; }
+
+        .card-header-nav { padding: 2px 4px; background: #2d2d2d; color: white; border: 1px solid #555; border-radius: 4px; outline: none; font-size: 10px; width: 100px; margin-left: 5px; }
+        .card-header-go { cursor: pointer; color: white; background: #333; border: 1px solid #555; border-radius: 4px; padding: 2px 6px; font-size: 10px; font-weight: bold; transition: 0.2s; margin-left: 2px; }
+        .card-header-go:hover { background: #444; }
+
+        .card-header-close { cursor: pointer; color: white; background: #dc3545; border: none; border-radius: 4px; padding: 2px 6px; font-size: 10px; font-weight: bold; transition: 0.2s; margin-left: 2px;}
+        .card-header-close:hover { background: #c82333; }
+
+        .card-middle { flex: 1; display: flex; }
+        .card-side { width: 10px; background: #1e1e1e; box-shadow: inset 0 0 5px rgba(0,0,0,0.5); }
+        .card-center { flex: 1; background: transparent; }
+
+        .card-footer { height: 30px; background: #1e1e1e; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #aaa; border-top: 1px solid #333; box-shadow: inset 0 2px 5px rgba(0,0,0,0.2); }
+
+        .tutorial-card { width: 280px; background: #1e1e1e; border-radius: 8px; overflow: hidden; border: 1px solid #333; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; }
+        .tutorial-card:hover { transform: translateY(-5px); border-color: #ff9800; box-shadow: 0 8px 15px rgba(255, 152, 0, 0.2); }
+        .tutorial-thumb { width: 100%; height: 157px; object-fit: cover; border-bottom: 2px solid #ff9800; }
+        .tutorial-title { padding: 15px; font-size: 14px; font-weight: 600; color: #fff; text-align: left; line-height: 1.4; flex-grow: 1; }
+
+        .hacker-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
+        .hacker-scroll::-webkit-scrollbar-track { background: #111; }
+        .hacker-scroll::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        .hacker-scroll::-webkit-scrollbar-thumb:hover { background: #00ff00; }
+    </style>
+</head>
+<body>
+    <div id="control-panel">
+        <button id="btn-flowork" class="btn btn-blue">⚙️ Flowork</button>
+        <button id="btn-toggle-view" class="btn btn-dark" title="Toggle between Mobile and Desktop Mode">📱 Mobile Mode</button>
+        <button id="btn-mobile-farm" class="btn btn-dark" style="color: #3DDC84;" title="Manage Physical Android Devices">📱 Mobile Farm</button>
+        <button id="btn-tutorial" class="btn btn-dark" title="Watch Flowork OS Tutorials">📺 Tutorial</button>
+
+        <div class="separator" id="sep-nav"></div>
+
+        <div class="group" id="nav-group">
+            <button id="btn-back" class="btn btn-dark" title="Go Back">⬅️</button>
+            <button id="btn-refresh" class="btn btn-dark" title="Refresh ALL Tabs">🔄</button>
+
+            <input type="text" id="nav-url-input" class="input-dark" style="width: 250px; display: none;" placeholder="Navigate URL..." title="Press Enter to navigate" />
+            <button id="btn-nav-go" class="btn btn-blue" style="display: none;" title="Go to URL">GO 🚀</button>
+
+            <select id="bot-selector" class="input-dark" style="max-width: 120px;">
+                <option value="">-- Select Device --</option>
+            </select>
+        </div>
+
+        <div class="separator" id="sep-scroll"></div>
+
+        <div class="group" id="auto-scroll-group" style="display: none;">
+            <button id="btn-auto-scroll" class="btn btn-warn" title="Start Auto Scroll">⬇️ Auto Scroll</button>
+            <button id="btn-stop-scroll" class="btn btn-red" style="display:none;" title="Stop Auto Scroll">🛑 Stop</button>
+            <input type="number" id="scroll-min" class="input-dark timer-input" value="3" title="Min interval (seconds)">
+            <span style="font-size: 10px;">-</span>
+            <input type="number" id="scroll-max" class="input-dark timer-input" value="8" title="Max interval (seconds)">
+            <span style="font-size: 10px;">sec</span>
+
+            <span class="separator" style="height: 15px; margin: 0 5px;"></span>
+            <span style="font-size: 10px;">Total:</span>
+            <input type="number" id="scroll-total" class="input-dark timer-input" value="100" title="Total scroll steps" style="width: 45px;">
+            <span style="font-size: 10px;">Up:</span>
+            <input type="number" id="scroll-up" class="input-dark timer-input" value="20" title="How many times to scroll up (random)" style="width: 35px;">
+        </div>
+
+        <div class="separator" id="sep-refresh"></div>
+
+        <div class="group" id="refresh-group">
+            <input type="checkbox" id="auto-refresh-checkbox" style="cursor: pointer;" title="Enable Auto Refresh">
+            <label for="auto-refresh-checkbox" style="font-size: 10px; cursor: pointer; color: #17a2b8; font-weight: bold;">🔄 Auto Refresh</label>
+            <input type="number" id="refresh-interval" class="input-dark timer-input" value="60" title="Refresh interval (seconds)" style="width: 45px;">
+            <span style="font-size: 10px;">sec</span>
+        </div>
+
+        <div class="separator" id="sep-bypass"></div>
+
+        <div class="group" id="bypass-group">
+            <input type="checkbox" id="record-bypass-checkbox" style="cursor: pointer;" title="Record Mode to Auto-Bypass Popups/Ads">
+            <label for="record-bypass-checkbox" style="font-size: 10px; cursor: pointer; color: #ff4d4d; font-weight: bold;">🔴 Record Bypass</label>
+            <button id="btn-clear-bypass" class="btn btn-dark" style="font-size: 10px; padding: 2px 5px;" title="Clear Bypass Database">🧹 Clear Mem</button>
+        </div>
+
+        <div class="separator" id="sep-addbot"></div>
+
+        <div class="group">
+            <button id="btn-add-device-modal" class="btn btn-green">+ Add Bot</button>
+        </div>
+
+        <div class="separator" id="sep-profile"></div>
+
+        <div style="margin-left: auto;" id="profile-container">
+            <button id="btn-toggle-sidebar" class="btn btn-blue">📁 Profiles</button>
+        </div>
+    </div>
+
+    <div id="add-bot-modal" style="display: none; position: fixed; top: 60px; left: 0; width: 100vw; height: calc(100vh - 60px); background: rgba(0,0,0,0.8); z-index: 100000; justify-content: center; align-items: center;">
+        <div style="background: #252526; padding: 25px; border-radius: 8px; border: 2px solid #007acc; width: 400px; box-shadow: 0 10px 40px rgba(0,0,0,0.9); display: flex; flex-direction: column; gap: 15px;">
+            <div style="font-weight: bold; font-size: 16px; color: #fff; border-bottom: 1px solid #444; padding-bottom: 10px;">
+                🤖 Launch New Bot / Device
+            </div>
+            <div>
+                <label style="font-size: 12px; color: #aaa;">Target Initial URL:</label><br>
+                <input type="text" id="modal-url-input" class="input-dark" value="https://www.tiktok.com" style="width: 100%; box-sizing: border-box; margin-top: 5px; font-size: 14px; padding: 8px;" placeholder="https://..." />
+            </div>
+
+            <div style="display: flex; gap: 10px; background: #1e1e1e; padding: 8px; border-radius: 4px; border: 1px solid #333; flex-wrap: wrap;">
+                <div style="width: 100%;">
+                    <input type="checkbox" id="modal-ghost-cursor-checkbox" checked style="cursor: pointer;">
+                    <label for="modal-ghost-cursor-checkbox" style="font-size: 11px; cursor: pointer; color: #fff;">👻 Ghost Cursor (Mouse Movement Simulation)</label>
+                </div>
+                <div style="width: 100%;">
+                    <input type="checkbox" id="modal-bandwidth-saver-checkbox" checked style="cursor: pointer;">
+                    <label for="modal-bandwidth-saver-checkbox" style="font-size: 11px; cursor: pointer; color: #fff;">📉 Low Bandwidth (144p) & 🔇 Stealth Mute</label>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; background: #1e1e1e; padding: 8px; border-radius: 4px; border: 1px solid #333; flex-wrap: wrap;">
+                <div style="width: 100%; display: flex; align-items: center; justify-content: space-between;">
+                    <div>
+                        <input type="checkbox" id="modal-sleep-cycle-checkbox" checked style="cursor: pointer;">
+                        <label for="modal-sleep-cycle-checkbox" style="font-size: 11px; cursor: pointer; color: #17a2b8; font-weight: bold;">💤 Human Sleep Cycle (Organic Mode)</label>
+                    </div>
+                </div>
+                <div id="modal-sleep-config" style="display: flex; gap: 5px; width: 100%; align-items: center;">
+                    <span style="font-size: 10px; color: #aaa;">Work:</span>
+                    <input type="number" id="sleep-work-min" class="input-dark timer-input" value="45" title="Work minutes before resting" style="width: 40px;">
+                    <span style="font-size: 10px; color: #aaa;">min</span>
+
+                    <span class="separator" style="height: 15px; margin: 0 5px;"></span>
+
+                    <span style="font-size: 10px; color: #aaa;">Rest:</span>
+                    <input type="number" id="sleep-rest-min" class="input-dark timer-input" value="15" title="Rest minutes" style="width: 40px;">
+                    <span style="font-size: 10px; color: #aaa;">min</span>
+                </div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 8px; background: #1e1e1e; padding: 8px; border-radius: 4px; border: 1px solid #333;">
+                <input type="checkbox" id="modal-proxy-checkbox" style="cursor: pointer;">
+                <label for="modal-proxy-checkbox" style="font-size: 12px; cursor: pointer; color: #ff4d4d; font-weight: bold;">🛡️ Enable Stealth / Proxy Mode</label>
+            </div>
+            <div id="modal-proxy-container" style="display: none;">
+                <label style="font-size: 12px; color: #aaa;">Proxy Address:</label><br>
+                <input type="text" id="modal-proxy-input" class="input-dark" style="width: 100%; box-sizing: border-box; margin-top: 5px; font-size: 14px; padding: 8px;" placeholder="socks5://ip:port" />
+
+                <button id="btn-buy-proxy" class="btn btn-warn" style="width: 100%; margin-top: 10px; font-size: 12px; padding: 8px;">🛒 Buy Trusted & Proven Safe IP Here</button>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button id="btn-modal-cancel" class="btn btn-dark" style="flex: 1; padding: 10px;">Cancel</button>
+                <button id="btn-modal-launch" class="btn btn-green" style="flex: 1; padding: 10px;">🚀 Launch Bot</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="cookie-modal" style="display: none; position: fixed; top: 60px; left: 0; width: 100vw; height: calc(100vh - 60px); background: rgba(0,0,0,0.8); z-index: 100000; justify-content: center; align-items: center;">
+        <div style="background: #252526; padding: 20px; border-radius: 8px; border: 2px solid #ff9800; width: 500px; box-shadow: 0 10px 40px rgba(0,0,0,0.9); display: flex; flex-direction: column; gap: 15px;">
+            <div style="font-weight: bold; font-size: 16px; color: #fff; border-bottom: 1px solid #444; padding-bottom: 10px;">
+                🍪 Cookie Vault (Netscape Format) - <span id="cookie-bot-id" style="color:#ff9800;"></span>
+            </div>
+            <div style="font-size: 12px; color: #aaa;">Paste Netscape cookies for passwordless login, or click Export to steal the active login session.</div>
+            <textarea id="cookie-textarea" class="input-dark" style="width: 100%; box-sizing: border-box; height: 200px; resize: none; font-family: monospace; font-size: 11px; white-space: pre; overflow-wrap: normal; overflow-x: scroll;" placeholder="# Netscape HTTP Cookie File..."></textarea>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button id="btn-cookie-cancel" class="btn btn-dark" style="flex: 1;">Cancel</button>
+                <button id="btn-cookie-export" class="btn btn-blue" style="flex: 1;">⬇️ Export Current</button>
+                <button id="btn-cookie-import" class="btn btn-green" style="flex: 1;">🚀 Import & Reload</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="farm-view" style="display: none; position: absolute; top: 60px; left: 0; width: 100%; height: calc(100vh - 60px); background: #121212; z-index: 60; flex-direction: column; overflow-y: auto; box-sizing: border-box;">
+        <div style="padding: 15px 25px; border-bottom: 1px solid #333; background: #1a1a1a; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h2 style="margin: 0; color: #3DDC84; font-size: 20px; display: flex; align-items: center; gap: 8px;">📱 Mobile Farm Dashboard</h2>
+                <span style="color: #aaa; font-size: 12px; margin-top: 6px; display: block;">Connect Physical Android Devices or Emulators via USB / WiFi (USB Debugging MUST be ON).</span>
+            </div>
+            <button id="btn-farm-refresh" class="btn btn-blue" style="height: 35px;">🔄 Scan Devices</button>
+        </div>
+        <div id="farm-list" style="padding: 25px; display: flex; flex-wrap: wrap; gap: 20px; justify-content: flex-start; align-content: flex-start;">
+            </div>
+    </div>
+
+    <div id="tutorial-view" style="display: none; position: absolute; top: 60px; left: 0; width: 100%; height: calc(100vh - 60px); background: #121212; z-index: 50; flex-direction: column; overflow-y: auto; box-sizing: border-box;">
+        <div style="padding: 15px 25px; border-bottom: 1px solid #333; background: #1a1a1a;">
+            <h2 style="margin: 0; color: #ff9800; font-size: 20px; display: flex; align-items: center; gap: 8px;">📺 Flowork OS Official Tutorials</h2>
+            <span style="color: #aaa; font-size: 12px; margin-top: 6px;">Select a video below. Videos will automatically play in an external browser (Chrome/Edge).</span>
+        </div>
+        <div id="tutorial-list" style="padding: 25px; display: flex; flex-wrap: wrap; gap: 20px; justify-content: flex-start; align-content: flex-start; background: #121212;">
+            <div style="color: #aaa; width: 100%; text-align: center; margin-top: 50px;">
+                <span class="loading-icon" style="font-size: 20px;">⏳</span><br>Fetching latest tutorials from YouTube...
+            </div>
+        </div>
+    </div>
+
+    <div id="grid-ui-layer" style="display: none;"></div>
+
+    <div id="profile-sidebar">
+        <div class="sidebar-header">📦 Session Profiles</div>
+        <div style="padding: 10px; border-bottom: 1px solid #444;">
+            <input type="text" id="profile-name-input" class="input-dark" placeholder="Enter Profile Name..." style="width: 100%; box-sizing: border-box; margin-bottom: 5px;">
+            <button id="btn-save-profile" class="btn btn-green" style="width: 100%;">💾 Save Current Tabs to Profile</button>
+        </div>
+        <div class="sidebar-content" id="profile-list"></div>
+        <div style="padding: 10px; font-size: 10px; color: #888; text-align: center;">*Right-Click a profile to Delete</div>
+    </div>
+
+    <div id="ctx-menu">
+        <div class="ctx-item" id="ctx-delete-profile">🗑️ Delete Profile</div>
+    </div>
+
+    <div id="inspector-modal" style="display: none; position: absolute; top: 60px; left: 0; width: 100%; height: calc(100vh - 60px); background: #050505; z-index: 100000; flex-direction: column; box-sizing: border-box;">
+
+        <div style="background: #111; padding: 12px 20px; border-bottom: 2px solid #333; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
+            <div style="display: flex; align-items: center; gap: 15px; width: 85%; flex-wrap: wrap;">
+                <span style="font-weight: bold; font-size: 16px; color: #00ff00; font-family: monospace; display: flex; align-items: center; gap: 5px;">
+                    >_ SYSTEM_INSPECTOR <span id="inspector-device-id" style="color:#ff4d4d; font-size:12px;"></span>
+                </span>
+
+                <input type="text" id="inspector-pkg-input" class="input-dark" placeholder="Package Name (e.g., com.whatsapp)" style="flex: 1; min-width: 150px; font-size: 13px; padding: 6px 10px; font-family: monospace; background: #000; color: #00ff00; border: 1px solid #00ff00; border-radius: 2px; outline: none;">
+
+                <button id="btn-inspector-auto" class="btn" style="background: #00ff00; color: #000; font-family: monospace; border-radius: 2px; font-weight: bold;">[ AUTO_DETECT ]</button>
+                <button id="btn-inspector-scan" class="btn" style="background: #222; color: #fff; border: 1px solid #00ff00; font-family: monospace; border-radius: 2px;">[ SCAN_APK ]</button>
+                <button id="btn-inspector-logcat" class="btn" style="background: #222; color: #fff; border: 1px solid #00ff00; font-family: monospace; border-radius: 2px;">[ LIVE_LOGCAT ]</button>
+                <button id="btn-inspector-pull" class="btn" style="background: #222; color: #fff; border: 1px solid #ff9800; font-family: monospace; border-radius: 2px;">[ PULL_APK ]</button>
+
+                <div style="display: flex; align-items: center; gap: 5px;">
+                    <input type="number" id="inspector-ram-input" class="input-dark" value="8" min="1" max="64" title="Max RAM (GB) for Decompile" style="width: 40px; font-family: monospace; text-align: center; border: 1px solid #ff00ff; background: #000; color: #ff00ff;" placeholder="GB">
+                    <span style="color: #ff00ff; font-size: 10px; font-family: monospace;">GB</span>
+                </div>
+
+                <button id="btn-inspector-decompile" class="btn" style="background: #222; color: #fff; border: 1px solid #ff00ff; font-family: monospace; border-radius: 2px;">[ DECOMPILE_SRC ]</button>
+
+                <button id="btn-inspector-disassemble" class="btn" style="background: #222; color: #fff; border: 1px solid #00e5ff; font-family: monospace; border-radius: 2px;" title="Bongkar pakai Apktool ke Smali">[ DISASSEMBLE ]</button>
+                <button id="btn-inspector-rebuild" class="btn" style="background: #222; color: #fff; border: 1px solid #3DDC84; font-family: monospace; border-radius: 2px;" title="Tampilkan Panel Rakit Ulang & Sign otomatis">[ REBUILD_SIGN ]</button>
+            </div>
+            <button id="btn-inspector-close" class="btn btn-red" style="font-family: monospace; border-radius: 2px; font-weight: bold;">[ X ] EXIT</button>
+        </div>
+
+        <div id="rebuild-panel" style="display: none; background: #1a1a1a; padding: 10px 20px; border-bottom: 2px solid #333; align-items: center; gap: 10px; box-shadow: inset 0 -5px 10px rgba(0,0,0,0.5);">
+            <span style="color: #3DDC84; font-size: 12px; font-family: monospace; font-weight: bold;">[>] TARGET FOLDER:</span>
+            <input type="text" id="inspector-rebuild-path" class="input-dark" placeholder="Pilih atau paste path folder [nama_package]_smali di sini..." style="flex: 1; font-family: monospace; font-size: 12px; border: 1px solid #3DDC84; color: #fff;">
+            <button id="btn-browse-folder" class="btn" style="background: #333; border: 1px solid #3DDC84; color: #3DDC84; font-family: monospace;">[ BROWSE ]</button>
+            <button id="btn-execute-rebuild" class="btn" style="background: #3DDC84; color: black; font-weight: bold; font-family: monospace;">🚀 EXECUTE REBUILD</button>
+        </div>
+
+        <div style="display: flex; gap: 15px; padding: 15px; flex: 1; overflow: hidden; background: #0a0a0a;">
+
+            <div style="flex: 1; display: flex; flex-direction: column; background: #000; border: 1px solid #333; border-radius: 4px; overflow: hidden; box-shadow: inset 0 0 10px rgba(0,0,0,0.8);">
+                <div style="background: #111; padding: 8px 15px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 12px; color: #00ff00; font-family: monospace;">~/apk_internal_info.txt</span>
+                    <button id="btn-copy-apk" class="btn" style="background: #222; color: #00ff00; padding: 3px 10px; font-size: 10px; font-family: monospace; border: 1px solid #00ff00; border-radius: 2px; transition: 0.2s;">COPY LOG</button>
+                </div>
+                <textarea id="inspector-apk-info" readonly class="hacker-scroll" style="flex: 1; background: #000; color: #00ff00; border: none; padding: 15px; resize: none; font-family: monospace; font-size: 12px; white-space: pre; overflow-wrap: normal; overflow-x: scroll; outline: none;" placeholder="Waiting for scan..."></textarea>
+            </div>
+
+            <div style="flex: 1; display: flex; flex-direction: column; background: #000; border: 1px solid #333; border-radius: 4px; overflow: hidden; box-shadow: inset 0 0 10px rgba(0,0,0,0.8);">
+                <div style="background: #111; padding: 8px 15px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 12px; color: #00e5ff; font-family: monospace;">~/live_logcat.log</span>
+                    <button id="btn-copy-logcat" class="btn" style="background: #222; color: #00e5ff; padding: 3px 10px; font-size: 10px; font-family: monospace; border: 1px solid #00e5ff; border-radius: 2px; transition: 0.2s;">COPY LOG</button>
+                </div>
+                <textarea id="inspector-logcat-info" readonly class="hacker-scroll" style="flex: 1; background: #000; color: #00e5ff; border: none; padding: 15px; resize: none; font-family: monospace; font-size: 12px; white-space: pre; overflow-wrap: normal; overflow-x: scroll; outline: none;" placeholder="Waiting for logcat stream..."></textarea>
+            </div>
+
+        </div>
+    </div>
+    <div id="custom-alert-modal" style="display: none; position: fixed; top: 60px; left: 0; width: 100vw; height: calc(100vh - 60px); background: transparent; z-index: 100000; justify-content: center; align-items: center; pointer-events: none;">
+        <div style="background: #252526; padding: 20px; border-radius: 8px; border: 2px solid #007acc; width: 350px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); display: flex; flex-direction: column; gap: 15px; pointer-events: auto;">
+            <div style="font-weight: bold; font-size: 14px; color: #ff4d4d; display: flex; align-items: center; gap: 8px;">
+                <span>⚠️</span> Flowork Notice
+            </div>
+            <textarea id="custom-alert-text" readonly style="width: 100%; height: 80px; background: #1e1e1e; color: #fff; border: 1px solid #444; border-radius: 4px; padding: 8px; font-family: monospace; font-size: 12px; resize: none; box-sizing: border-box; outline: none;"></textarea>
+            <div style="display: flex; gap: 10px;">
+                <button id="btn-alert-copy" class="btn btn-blue" style="flex: 1;">📋 Copy Text</button>
+                <button id="btn-alert-close" class="btn btn-dark" style="flex: 1;">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="./renderer.js"></script>
+    <script src="./renderer_modules/core_ui.js"></script>
+    <script src="./renderer_modules/bot_manager.js"></script>
+    <script src="./renderer_modules/farm_tutorial.js"></script>
+    <script src="./renderer_modules/farm_ui.js"></script>
+    <script src="./renderer_modules/grid_profiles.js"></script>
+    <script src="./renderer_modules/inspector.js"></script>
+</body>
+</html>

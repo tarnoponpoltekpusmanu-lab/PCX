@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flowork Initializing...</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: transparent; /* Transparan agar menyatu dengan borderless window */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            font-family: sans-serif;
+            -webkit-app-region: drag; /* Memungkinkan user menggeser splash screen */
+        }
+        .splash-container {
+            background-color: #050505;
+            border: 1px solid #232733;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+            width: 400px;
+            height: 480px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <div class="splash-container">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 600" width="100%" height="100%">
+            <defs>
+              <linearGradient id="core_grad" x1="0%" y1="100%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#2d2f45"/>
+                <stop offset="50%" stop-color="#706bf3"/>
+                <stop offset="100%" stop-color="#54d7f6"/>
+              </linearGradient>
+
+              <filter id="spinner_glow" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur"/>
+                <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 3 -1" result="brightBlur"/>
+                <feMerge>
+                  <feMergeNode in="brightBlur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+
+              <filter id="text_glow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="2" result="blur"/>
+                  <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+              </filter>
+
+              <clipPath id="clip_line1">
+                <rect x="0" y="490" width="0" height="25">
+                  <animate attributeName="width" values="0; 512; 512; 0; 0" keyTimes="0; 0.16; 0.88; 0.95; 1" dur="9s" repeatCount="indefinite" />
+                </rect>
+              </clipPath>
+
+              <clipPath id="clip_line2">
+                <rect x="0" y="520" width="0" height="25">
+                  <animate attributeName="width" values="0; 0; 512; 512; 0; 0" keyTimes="0; 0.16; 0.33; 0.88; 0.95; 1" dur="9s" repeatCount="indefinite" />
+                </rect>
+              </clipPath>
+
+              <clipPath id="clip_line3">
+                <rect x="0" y="545" width="0" height="25">
+                  <animate attributeName="width" values="0; 0; 512; 512; 0; 0" keyTimes="0; 0.33; 0.50; 0.88; 0.95; 1" dur="9s" repeatCount="indefinite" />
+                </rect>
+              </clipPath>
+
+              <style>
+                  .title-text {
+                      font-family: 'Courier New', Courier, monospace;
+                      font-weight: 900;
+                      letter-spacing: 8px;
+                      text-transform: uppercase;
+                      fill: #54d7f6;
+                      filter: url(#text_glow);
+                  }
+                  .tagline-text {
+                      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                      font-weight: 400;
+                      font-size: 14px;
+                      fill: #a0aec0;
+                      text-anchor: middle;
+                  }
+               </style>
+            </defs>
+
+            <g transform="translate(0, -50) scale(0.85) translate(45, 45)">
+                <circle cx="256" cy="256" r="230" fill="none" stroke="#54d7f6" stroke-width="8" stroke-linecap="round" stroke-dasharray="200 150 50 150" filter="url(#spinner_glow)">
+                   <animateTransform attributeName="transform" type="rotate" from="0 256 256" to="360 256 256" dur="3s" repeatCount="indefinite" additive="sum"/>
+                </circle>
+                <circle cx="256" cy="256" r="200" fill="none" stroke="#706bf3" stroke-width="10" stroke-linecap="round" stroke-dasharray="100 80 30 80 100 80" filter="url(#spinner_glow)" opacity="0.8">
+                   <animateTransform attributeName="transform" type="rotate" from="360 256 256" to="0 256 256" dur="2.5s" repeatCount="indefinite" additive="sum"/>
+                </circle>
+                <circle cx="256" cy="26" r="6" fill="#ffffff" filter="url(#spinner_glow)">
+                    <animateTransform attributeName="transform" type="rotate" from="0 256 256" to="360 256 256" dur="3s" repeatCount="indefinite"/>
+                 </circle>
+
+                <g transform="translate(102, 102) scale(0.6)">
+                  <path d="M100 80 L 220 80 L 220 200 L 160 200 L 160 432 L 100 432 Z" fill="url(#core_grad)" stroke="#3a3962" stroke-width="4"/>
+                  <path d="M260 80 L 412 80 L 412 180 L 260 180 Z" fill="#54d7f6" opacity="0.9"/>
+                  <path d="M260 220 L 360 220 L 360 320 L 260 320 Z" fill="#706bf3" opacity="0.9"/>
+                  <path d="M220 130 L 260 130" stroke="#ffd700" stroke-width="8" stroke-linecap="round"/>
+                  <path d="M220 270 L 260 270" stroke="#ffd700" stroke-width="8" stroke-linecap="round"/>
+                </g>
+            </g>
+
+            <text x="256" y="470" text-anchor="middle" class="title-text" font-size="42">FLOWORK</text>
+
+            <g clip-path="url(#clip_line1)">
+                <text x="256" y="510" class="tagline-text" fill="#fff" font-weight="bold">
+                  The First Hybrid OS for the Unstoppable.
+                </text>
+            </g>
+
+            <g clip-path="url(#clip_line2)">
+                <text x="256" y="535" class="tagline-text">
+                  100% Offline Privacy. Forever Free.
+                </text>
+            </g>
+
+            <g clip-path="url(#clip_line3)">
+                <text x="256" y="560" class="tagline-text" fill="#ffd700">
+                  Built to defy the odds.
+                </text>
+            </g>
+          </svg>
+    </div>
+</body>
+</html>
