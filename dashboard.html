@@ -1,0 +1,3362 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flowork OS — Mission Control</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@400;500;700;900&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #080c18;
+            --bg-panel: #0e1528;
+            --bg-card: linear-gradient(160deg, rgba(40, 120, 255, 0.08) 0%, rgba(100, 50, 255, 0.04) 30%, rgba(14, 21, 40, 0.9) 100%);
+            --glass-border: rgba(80, 140, 255, 0.22);
+            --glass-border-hover: rgba(80, 180, 255, 0.55);
+            --glass-shine: linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.04) 30%, transparent 55%);
+            --accent-1: #3b82f6;
+            /* vivid blue */
+            --accent-2: #06d6a0;
+            /* bright teal/green */
+            --accent-3: #8b5cf6;
+            /* electric violet */
+            --accent-4: #f472b6;
+            /* hot pink */
+            --accent-5: #fbbf24;
+            /* amber gold */
+            --accent-6: #38bdf8;
+            /* sky blue */
+            --accent-7: #f87171;
+            /* coral red */
+            --accent-8: #34d399;
+            /* emerald */
+            --glow-blue: 0 0 25px rgba(59, 130, 246, 0.35), 0 0 80px rgba(59, 130, 246, 0.08);
+            --glow-teal: 0 0 25px rgba(6, 214, 160, 0.3), 0 0 60px rgba(6, 214, 160, 0.08);
+            --glow-violet: 0 0 25px rgba(139, 92, 246, 0.3), 0 0 60px rgba(139, 92, 246, 0.08);
+            --text-bright: #f0f4ff;
+            --text-main: #b4c6e0;
+            --text-dim: #3a4d6a;
+            --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+            --font-sans: 'Inter', 'Segoe UI', sans-serif;
+            --font-display: 'Orbitron', 'Inter', sans-serif;
+            --r: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-main);
+            color: var(--text-main);
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw
+        }
+
+        /* ═══ FUTURISTIC BACKGROUND ═══ */
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.5;
+            pointer-events: none
+        }
+
+        .cyber-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            background:
+                linear-gradient(rgba(59, 130, 246, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(59, 130, 246, 0.04) 1px, transparent 1px),
+                radial-gradient(ellipse at 30% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 40%),
+                radial-gradient(ellipse at 10% 70%, rgba(6, 214, 160, 0.06) 0%, transparent 40%);
+            background-size: 60px 60px, 60px 60px, 100% 100%, 100% 100%, 100% 100%;
+        }
+
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            background: repeating-linear-gradient(0deg, transparent, transparent 4px, rgba(59, 130, 246, 0.01) 4px, rgba(59, 130, 246, 0.01) 8px)
+        }
+
+        .vignette {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            background: radial-gradient(ellipse at center, transparent 50%, rgba(8, 12, 24, 0.5) 100%)
+        }
+
+        .ambient-glow {
+            position: fixed;
+            top: -20%;
+            left: 10%;
+            width: 50%;
+            height: 50%;
+            z-index: 0;
+            pointer-events: none;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.07) 0%, transparent 70%);
+            animation: ambientFloat 18s ease-in-out infinite alternate
+        }
+
+        .ambient-glow-2 {
+            position: fixed;
+            bottom: -15%;
+            right: 5%;
+            width: 45%;
+            height: 45%;
+            z-index: 0;
+            pointer-events: none;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.06) 0%, transparent 70%);
+            animation: ambientFloat 22s ease-in-out infinite alternate-reverse
+        }
+
+        .ambient-glow-3 {
+            position: fixed;
+            top: 40%;
+            left: -10%;
+            width: 40%;
+            height: 40%;
+            z-index: 0;
+            pointer-events: none;
+            background: radial-gradient(circle, rgba(6, 214, 160, 0.04) 0%, transparent 70%);
+            animation: ambientFloat 25s ease-in-out infinite alternate
+        }
+
+        @keyframes ambientFloat {
+            0% {
+                transform: translate(0, 0) scale(1)
+            }
+
+            100% {
+                transform: translate(40px, 25px) scale(1.15)
+            }
+        }
+
+        /* ═══ GLASS CARD ═══ */
+        .gc {
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--r);
+            position: relative;
+            overflow: hidden;
+            transition: all .35s cubic-bezier(.4, 0, .2, 1);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px)
+        }
+
+        .gc::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: var(--glass-shine);
+            pointer-events: none;
+            border-radius: var(--r) var(--r) 0 0;
+            z-index: 1
+        }
+
+        .gc::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 5%;
+            right: 5%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.5), transparent);
+            z-index: 2
+        }
+
+        .gc:hover {
+            border-color: var(--glass-border-hover);
+            box-shadow: var(--glow-blue);
+            transform: translateY(-4px)
+        }
+
+        .app {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            height: 100vh
+        }
+
+        /* ═══ TOP BAR ═══ */
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 44px;
+            padding: 0 18px;
+            background: linear-gradient(180deg, rgba(59, 130, 246, 0.08) 0%, rgba(14, 21, 40, 0.97) 100%);
+            border-bottom: 1px solid var(--glass-border);
+            box-shadow: 0 4px 30px rgba(59, 130, 246, 0.1), inset 0 -1px 0 rgba(139, 92, 246, 0.12);
+            flex-shrink: 0;
+            backdrop-filter: blur(10px)
+        }
+
+        .logo {
+            font-family: var(--font-display);
+            font-weight: 900;
+            font-size: 14px;
+            letter-spacing: 4px;
+            background: linear-gradient(135deg, var(--accent-6), var(--accent-1), var(--accent-3));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 20px rgba(59, 130, 246, 0.5))
+        }
+
+        .logo span {
+            color: var(--text-dim);
+            font-size: 9px;
+            font-weight: 400;
+            font-family: var(--font-mono);
+            margin-left: 10px;
+            letter-spacing: 0;
+            -webkit-text-fill-color: var(--text-dim)
+        }
+
+        .hud {
+            display: flex;
+            gap: 16px;
+            font-family: var(--font-mono);
+            font-size: 10px
+        }
+
+        .hud-i {
+            display: flex;
+            align-items: center;
+            gap: 4px
+        }
+
+        .hud-l {
+            color: var(--text-dim);
+            font-size: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px
+        }
+
+        .hud-v {
+            color: var(--accent-6);
+            font-weight: 700;
+            text-shadow: 0 0 12px rgba(56, 189, 248, 0.5)
+        }
+
+        .st {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: var(--font-mono);
+            font-size: 9px
+        }
+
+        .st-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-2);
+            box-shadow: 0 0 14px var(--accent-2), 0 0 30px rgba(6, 214, 160, 0.3);
+            animation: pulse 2s ease-in-out infinite
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1)
+            }
+
+            50% {
+                opacity: .6;
+                transform: scale(.85)
+            }
+        }
+
+        .main {
+            display: flex;
+            flex: 1;
+            overflow: hidden
+        }
+
+        .p-center-wrap {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            min-width: 0
+        }
+
+        /* ═══ LEFT: FILE MANAGER ═══ */
+        .p-left {
+            width: 220px;
+            min-width: 180px;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--glass-border);
+            background: rgba(10, 10, 16, 0.6);
+            flex-shrink: 0;
+            transition: width .2s ease, min-width .2s ease, opacity .2s ease;
+            overflow: hidden
+        }
+
+        .p-left.hidden {
+            width: 0;
+            min-width: 0;
+            border-right: none;
+            opacity: 0;
+            pointer-events: none
+        }
+
+        .fm-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--glass-border);
+            background: rgba(0, 0, 0, 0.3)
+        }
+
+        .fm-title {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            color: var(--accent-6);
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 6px
+        }
+
+        .fm-actions {
+            display: flex;
+            gap: 3px
+        }
+
+        .fm-btn {
+            background: rgba(59, 130, 246, 0.12);
+            border: 1px solid rgba(59, 130, 246, 0.25);
+            color: var(--accent-1);
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 9px;
+            cursor: pointer;
+            transition: all .2s;
+            font-family: var(--font-mono)
+        }
+
+        .fm-btn:hover {
+            background: rgba(59, 130, 246, 0.25);
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0.2)
+        }
+
+        .fm-btn-add {
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            color: var(--accent-2)
+        }
+
+        .fm-btn-add:hover {
+            background: rgba(16, 185, 129, 0.25)
+        }
+
+        .fm-breadcrumb {
+            padding: 5px 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid var(--glass-border);
+            font-family: var(--font-mono);
+            font-size: 9px;
+            color: var(--text-dim);
+            overflow-x: auto;
+            white-space: nowrap;
+            scrollbar-width: thin;
+            scrollbar-color: var(--glass-border) transparent;
+            display: flex;
+            align-items: center;
+            gap: 2px
+        }
+
+        .fm-crumb {
+            cursor: pointer;
+            transition: color .15s;
+            color: var(--accent-1)
+        }
+
+        .fm-crumb:hover {
+            color: var(--accent-6)
+        }
+
+        .fm-crumb-active {
+            color: var(--accent-6);
+            font-weight: 600
+        }
+
+        .fm-crumb-sep {
+            color: var(--text-dim);
+            margin: 0 2px
+        }
+
+        /* ═══ PANEL TOGGLE BUTTONS ═══ */
+        .panel-toggles {
+            display: flex;
+            gap: 6px;
+            margin-right: 15px;
+            margin-left: auto;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 3px;
+            border-radius: 20px;
+            border: 1px solid rgba(59, 130, 246, 0.1);
+        }
+
+        .tog-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            padding: 4px 12px;
+            border-radius: 14px;
+            cursor: pointer;
+            font-size: 10px;
+            font-family: var(--font-mono);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            transition: all .2s cubic-bezier(.4, 0, .2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tog-btn:hover {
+            color: var(--accent-1);
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .tog-btn.active {
+            color: #fff;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.4), rgba(139, 92, 246, 0.4));
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.3), inset 0 0 5px rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        /* Panel hidden states */
+        .p-left.hidden,
+        .p-right.hidden {
+            width: 0 !important;
+            min-width: 0 !important;
+            flex-basis: 0 !important;
+            padding: 0 !important;
+            border: none !important;
+            opacity: 0;
+            pointer-events: none;
+            overflow: hidden;
+            transition: width .2s ease, min-width .2s ease, flex-basis .2s ease, opacity .2s ease;
+            position: relative;
+        }
+
+        .lp.hidden {
+            height: 0 !important;
+            min-height: 0 !important;
+            flex-basis: 0 !important;
+            padding: 0 !important;
+            border-top: none !important;
+            opacity: 0;
+            pointer-events: none;
+            overflow: hidden;
+            transition: height .2s ease, min-height .2s ease, flex-basis .2s ease, opacity .2s ease;
+            position: relative;
+        }
+
+        .fm-list {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 2px 0;
+            scrollbar-width: thin;
+            scrollbar-color: var(--glass-border) transparent
+        }
+
+        /* VS Code Tree Items */
+        .tree-row {
+            display: flex;
+            align-items: center;
+            padding: 1px 0;
+            padding-right: 8px;
+            cursor: pointer;
+            transition: background .08s;
+            height: 22px;
+            user-select: none;
+            white-space: nowrap
+        }
+
+        .tree-row:hover {
+            background: rgba(59, 130, 246, 0.1)
+        }
+
+        .tree-row.selected {
+            background: rgba(59, 130, 246, 0.18)
+        }
+
+        .tree-indent {
+            display: inline-block;
+            width: 16px;
+            flex-shrink: 0;
+            position: relative
+        }
+
+        .tree-indent::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background: rgba(255, 255, 255, 0.06)
+        }
+
+        .tree-arrow {
+            width: 16px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 8px;
+            color: var(--text-dim);
+            transition: transform .12s
+        }
+
+        .tree-arrow.open {
+            transform: rotate(90deg)
+        }
+
+        .tree-arrow.empty {
+            visibility: hidden
+        }
+
+        .tree-icon {
+            font-size: 12px;
+            width: 16px;
+            text-align: center;
+            flex-shrink: 0;
+            margin-right: 4px
+        }
+
+        .tree-label {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-main);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex: 1;
+            min-width: 0
+        }
+
+        .tree-row.is-dir .tree-label {
+            color: var(--accent-6)
+        }
+
+        .tree-badge {
+            font-family: var(--font-mono);
+            font-size: 8px;
+            color: var(--text-dim);
+            margin-left: 4px;
+            opacity: .5
+        }
+
+        .tree-children {
+            display: none
+        }
+
+        .tree-children.open {
+            display: block
+        }
+
+        .fm-status {
+            padding: 5px 10px;
+            border-top: 1px solid var(--glass-border);
+            background: rgba(0, 0, 0, 0.3);
+            font-family: var(--font-mono);
+            font-size: 8px;
+            color: var(--text-dim);
+            display: flex;
+            justify-content: space-between
+        }
+
+        /* ═══ CENTER TAB BAR (VS Code style) ═══ */
+        .center-tabs {
+            display: flex;
+            background: rgba(0, 0, 0, 0.4);
+            border-bottom: 1px solid var(--glass-border);
+            overflow-x: auto;
+            overflow-y: hidden;
+            scrollbar-width: thin;
+            scrollbar-color: var(--glass-border) transparent;
+            flex-shrink: 0;
+            min-height: 32px;
+            align-items: stretch
+        }
+
+        .center-tabs::-webkit-scrollbar {
+            height: 3px
+        }
+
+        .center-tabs::-webkit-scrollbar-track {
+            background: transparent
+        }
+
+        .center-tabs::-webkit-scrollbar-thumb {
+            background: var(--glass-border);
+            border-radius: 2px
+        }
+
+        .center-tab {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 0 12px;
+            height: 32px;
+            font-family: var(--font-mono);
+            font-size: 10px;
+            color: var(--text-dim);
+            cursor: pointer;
+            border-right: 1px solid rgba(255, 255, 255, 0.04);
+            border-bottom: 2px solid transparent;
+            transition: all .15s;
+            white-space: nowrap;
+            flex-shrink: 0;
+            user-select: none;
+            position: relative
+        }
+
+        .center-tab:hover {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.03)
+        }
+
+        .center-tab.active {
+            color: #fff;
+            background: rgba(59, 130, 246, 0.06);
+            border-bottom-color: var(--accent-1)
+        }
+
+        .center-tab.permanent {
+            font-weight: 700;
+            letter-spacing: .5px
+        }
+
+        .center-tab.ai-writing {
+            border-bottom-color: #F59E0B;
+            color: #FBBF24
+        }
+
+        .center-tab.ai-writing::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #F59E0B;
+            animation: aiPulse 1.2s infinite;
+            flex-shrink: 0
+        }
+
+        @keyframes aiPulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                box-shadow: 0 0 4px #F59E0B
+            }
+
+            50% {
+                opacity: .4;
+                box-shadow: none
+            }
+        }
+
+        .center-tab .tab-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            flex-shrink: 0
+        }
+
+        .center-tab .tab-dot.modified {
+            background: #FBBF24
+        }
+
+        .center-tab .tab-dot.saved {
+            background: var(--accent-2)
+        }
+
+        .center-tab .tab-close {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+            font-size: 12px;
+            line-height: 1;
+            color: var(--text-dim);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: all .15s;
+            margin-left: 2px;
+            flex-shrink: 0
+        }
+
+        .center-tab .tab-close:hover {
+            background: rgba(248, 113, 113, 0.3);
+            color: var(--accent-7)
+        }
+
+        .center-tab-icon {
+            font-size: 12px;
+            flex-shrink: 0
+        }
+
+        /* ═══ CENTER CONTENT AREA ═══ */
+        .center-content {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+            min-height: 0
+        }
+
+        .tab-pane {
+            display: none;
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--glass-border) transparent
+        }
+
+        .tab-pane.active {
+            display: flex;
+            flex-direction: column
+        }
+
+        .tab-pane-dashboard {
+            padding: 14px;
+            gap: 12px
+        }
+
+        /* Code viewer pane */
+        .tab-pane-code {
+            background: #1e1e1e;
+            padding: 0
+        }
+
+        .code-viewer-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 14px;
+            background: rgba(0, 0, 0, 0.5);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            flex-shrink: 0
+        }
+
+        .code-viewer-header .lang-badge {
+            font-family: var(--font-mono);
+            font-size: 8px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: var(--accent-6);
+            text-transform: uppercase;
+            background: rgba(56, 189, 248, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px
+        }
+
+        .code-viewer-header .file-path {
+            font-family: var(--font-mono);
+            font-size: 9px;
+            color: var(--text-dim)
+        }
+
+        .code-viewer-body {
+            flex: 1;
+            overflow: auto;
+            padding: 12px 16px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.1) transparent
+        }
+
+        .code-viewer-body pre {
+            margin: 0;
+            font-family: 'Consolas', 'Fira Code', 'JetBrains Mono', var(--font-mono);
+            font-size: 13px;
+            line-height: 1.6;
+            color: #D4D4D4;
+            white-space: pre;
+            tab-size: 4;
+            pointer-events: none;
+            padding: 0;
+        }
+
+        .code-viewer-body .code-editor-fg {
+            position: absolute;
+            top: 12px;
+            left: 16px;
+            width: calc(100% - 32px);
+            height: calc(100% - 24px);
+            margin: 0;
+            padding: 0;
+            font-family: 'Consolas', 'Fira Code', 'JetBrains Mono', var(--font-mono);
+            font-size: 13px;
+            line-height: 1.6;
+            color: transparent;
+            background: transparent;
+            caret-color: #fff;
+            border: none;
+            outline: none;
+            resize: none;
+            overflow: auto;
+            white-space: pre;
+            tab-size: 4;
+            z-index: 2;
+        }
+
+        .code-viewer-body .code-view-bg {
+            position: absolute;
+            top: 12px;
+            left: 16px;
+            width: calc(100% - 32px);
+            height: calc(100% - 24px);
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .sq-err {
+            text-decoration: underline wavy #f87171 2px;
+        }
+
+        .sq-warn {
+            text-decoration: underline wavy #facc15 2px;
+        }
+
+        .hl-keyword {
+            color: #c678dd;
+        }
+
+        .hl-string {
+            color: #98c379;
+        }
+
+        .hl-number {
+            color: #d19a66;
+        }
+
+        .hl-comment {
+            color: #5c6370;
+            font-style: italic;
+        }
+
+        .st-h {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2.5px;
+            color: var(--accent-1);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px
+        }
+
+        .st-h::before {
+            content: '▸';
+            color: var(--accent-4);
+            text-shadow: 0 0 15px var(--accent-4);
+            font-size: 12px
+        }
+
+        .st-h::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, rgba(59, 130, 246, 0.3), transparent)
+        }
+
+        .mg {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px
+        }
+
+        .mc {
+            padding: 14px 10px;
+            text-align: center
+        }
+
+        .gauge-svg {
+            width: 72px;
+            height: 72px;
+            margin: 0 auto 6px
+        }
+
+        .gauge-bg {
+            fill: none;
+            stroke: rgba(59, 130, 246, 0.1);
+            stroke-width: 5
+        }
+
+        .gauge-fill {
+            fill: none;
+            stroke-width: 5;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1s ease
+        }
+
+        .gauge-text {
+            font-family: var(--font-display);
+            font-size: 14px;
+            font-weight: 700
+        }
+
+        .ml {
+            font-family: var(--font-mono);
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 2.5px;
+            color: var(--text-dim);
+            font-weight: 600
+        }
+
+        .ms {
+            font-family: var(--font-mono);
+            font-size: 7px;
+            color: var(--text-dim);
+            margin-top: 3px
+        }
+
+        .ag {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px
+        }
+
+        .ac {
+            padding: 16px 8px;
+            text-align: center;
+            cursor: pointer
+        }
+
+        .ac:hover .ai-icon {
+            transform: scale(1.2) translateY(-4px);
+            filter: drop-shadow(0 4px 20px rgba(59, 130, 246, 0.7))
+        }
+
+        .ac:hover .al {
+            color: var(--accent-6);
+            text-shadow: 0 0 10px rgba(56, 189, 248, 0.4)
+        }
+
+        .ai-icon {
+            font-size: 26px;
+            display: block;
+            margin-bottom: 6px;
+            filter: drop-shadow(0 2px 12px rgba(59, 130, 246, 0.3));
+            position: relative;
+            z-index: 1;
+            transition: all .3s cubic-bezier(.4, 0, .2, 1)
+        }
+
+        .al {
+            font-family: var(--font-mono);
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: var(--text-main);
+            position: relative;
+            z-index: 1;
+            transition: all .25s
+        }
+
+        .bsg {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px
+        }
+
+        .bp {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(59, 130, 246, 0.06);
+            border: 1px solid rgba(59, 130, 246, 0.15);
+            border-radius: 16px;
+            padding: 4px 9px;
+            font-family: var(--font-mono);
+            font-size: 9px;
+            color: var(--accent-1);
+            transition: all .2s;
+            font-weight: 500
+        }
+
+        .bp:hover {
+            border-color: rgba(59, 130, 246, 0.35);
+            background: rgba(59, 130, 246, 0.12);
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0.15)
+        }
+
+        .bd {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%
+        }
+
+        .bd-on {
+            background: var(--accent-2);
+            box-shadow: 0 0 10px var(--accent-2);
+            animation: pulse 2s ease-in-out infinite
+        }
+
+        .bd-off {
+            background: var(--accent-7);
+            box-shadow: 0 0 6px rgba(248, 113, 113, .5)
+        }
+
+        /* ═══ RIGHT: CHAT ═══ */
+        .p-right {
+            width: 380px;
+            min-width: 260px;
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid var(--glass-border);
+            flex-shrink: 1;
+            transition: width .2s ease, min-width .2s ease, opacity .2s ease;
+            overflow: hidden
+        }
+
+        .np {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0
+        }
+
+        .nh {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 14px;
+            background: rgba(59, 130, 246, 0.04);
+            border-bottom: 1px solid var(--glass-border);
+            flex-shrink: 0
+        }
+
+        .nt {
+            font-family: var(--font-display);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, var(--accent-6), var(--accent-3));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 12px rgba(59, 130, 246, 0.4))
+        }
+
+        .nm {
+            font-family: var(--font-mono);
+            font-size: 9px;
+            color: var(--text-dim);
+            display: flex;
+            align-items: center;
+            gap: 5px
+        }
+
+        .cms {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--glass-border) transparent
+        }
+
+        .cm {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            line-height: 1.5;
+            padding: 10px 14px;
+            border-radius: 8px;
+            max-width: 90%;
+            word-wrap: break-word
+        }
+
+        .cm-u {
+            background: rgba(139, 92, 246, 0.12);
+            border: 1px solid rgba(139, 92, 246, 0.22);
+            color: var(--accent-3);
+            align-self: flex-end
+        }
+
+        .cm-u::before {
+            content: '> ';
+            color: rgba(139, 92, 246, .4)
+        }
+
+        .cm-a {
+            background: rgba(59, 130, 246, 0.08);
+            border: 1px solid rgba(59, 130, 246, 0.18);
+            color: var(--accent-6);
+            align-self: flex-start
+        }
+
+        .cm-a::before {
+            content: '< ';
+            color: rgba(56, 189, 248, .35)
+        }
+
+        .cm-s {
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 9px;
+            align-self: center;
+            border: none;
+            background: none
+        }
+
+        .chat-input-area {
+            position: relative;
+            display: flex;
+            align-items: center;
+            background: rgba(14, 21, 40, 0.7);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 8px 12px;
+            margin: 10px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            flex-shrink: 0;
+            z-index: 100;
+        }
+
+        .chat-input-area:focus-within {
+            border-color: var(--accent-6);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), var(--glow-blue);
+            background: rgba(14, 21, 40, 0.85);
+        }
+
+        .ci {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 8px 4px;
+            color: var(--text-bright);
+            font-family: var(--font-sans);
+            font-size: 13px;
+            outline: none;
+            resize: none;
+            max-height: 150px;
+            line-height: 1.5;
+        }
+
+        .ci::placeholder {
+            color: var(--text-dim);
+            font-family: var(--font-mono);
+        }
+
+        .csb {
+            background: linear-gradient(135deg, var(--accent-1), var(--accent-3));
+            border: none;
+            border-radius: 12px;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.25s;
+            box-shadow: 0 2px 10px rgba(59, 130, 246, 0.3);
+            flex-shrink: 0;
+        }
+
+        .csb:hover {
+            transform: scale(1.05);
+            box-shadow: var(--glow-blue);
+        }
+
+        .chat-msg {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            margin-bottom: 12px;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .chat-msg.user {
+            align-items: flex-end;
+        }
+
+        .chat-msg.agent {
+            align-items: flex-start;
+        }
+
+        .chat-msg.system {
+            align-items: center;
+        }
+
+        .chat-bubble {
+            max-width: 90%;
+            padding: 12px 16px;
+            border-radius: 14px;
+            font-size: 12px;
+            line-height: 1.6;
+            word-break: break-word;
+            font-family: var(--font-sans);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .user .chat-bubble {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.15));
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            color: var(--text-bright);
+            border-bottom-right-radius: 4px;
+        }
+
+        .agent .chat-bubble {
+            background: linear-gradient(135deg, rgba(14, 21, 40, 0.8), rgba(20, 30, 50, 0.9));
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            border-bottom-left-radius: 4px;
+        }
+
+        .system .chat-bubble {
+            background: transparent;
+            border: 1px dashed rgba(255, 255, 255, 0.1);
+            color: var(--text-dim);
+            font-size: 10px;
+            font-family: var(--font-mono);
+            box-shadow: none;
+            padding: 6px 12px;
+            border-radius: 20px;
+        }
+
+        .code-block-wrapper pre {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 0 0 8px 8px;
+            padding: 12px;
+            overflow-x: auto;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-main);
+        }
+
+        .code-block-header {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 6px 12px;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* ═══ LOG PANEL (inside center column) ═══ */
+        .lp {
+            height: 200px;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            border-top: 1px solid var(--glass-border);
+            flex-shrink: 0;
+            background: rgba(0, 0, 0, 0.25)
+        }
+
+        .lh {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 14px;
+            background: rgba(0, 0, 0, .4);
+            border-bottom: 1px solid var(--glass-border);
+            flex-shrink: 0
+        }
+
+        .lt {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-dim)
+        }
+
+        .lcb {
+            background: none;
+            border: 1px solid rgba(139, 92, 246, .2);
+            border-radius: 4px;
+            padding: 3px 8px;
+            color: var(--accent-3);
+            font-family: var(--font-mono);
+            font-size: 8px;
+            cursor: pointer;
+            transition: all .2s;
+            font-weight: 600
+        }
+
+        .lcb:hover {
+            border-color: var(--accent-3);
+            background: rgba(139, 92, 246, .1)
+        }
+
+        .lc {
+            flex: 1;
+            overflow-y: auto;
+            padding: 6px 10px;
+            font-family: var(--font-mono);
+            font-size: 9px;
+            line-height: 1.7;
+            background: rgba(0, 0, 0, .35);
+            scrollbar-width: thin;
+            scrollbar-color: var(--glass-border) transparent
+        }
+
+        .le {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis
+        }
+
+        .l-ts {
+            color: var(--text-dim)
+        }
+
+        .l-sys {
+            color: var(--accent-6)
+        }
+
+        .l-ai {
+            color: var(--accent-1)
+        }
+
+        .l-net {
+            color: var(--accent-3)
+        }
+
+        .l-agt {
+            color: var(--accent-5)
+        }
+
+        .l-err {
+            color: var(--accent-7);
+            text-shadow: 0 0 8px rgba(248, 113, 113, .4)
+        }
+
+        .l-warn {
+            color: var(--accent-5)
+        }
+
+        .ctx-item {
+            padding: 6px 14px;
+            font-family: var(--font-mono);
+            font-size: 10px;
+            color: var(--text-main);
+            cursor: pointer;
+            transition: all .15s
+        }
+
+        .ctx-item:hover {
+            background: rgba(59, 130, 246, 0.12);
+            color: var(--accent-6)
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(59, 130, 246, 0.2);
+            border-radius: 3px
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-1)
+        }
+
+        @media(max-width:1400px) {
+            .p-right {
+                width: 340px;
+                min-width: 260px
+            }
+
+            .p-left {
+                width: 200px;
+                min-width: 160px
+            }
+        }
+
+        @media(max-width:1100px) {
+            .p-left {
+                display: none
+            }
+
+            .mg {
+                grid-template-columns: repeat(2, 1fr)
+            }
+
+            .ag {
+                grid-template-columns: repeat(3, 1fr)
+            }
+
+            .p-right {
+                width: 300px;
+                min-width: 240px
+            }
+        }
+
+        @media(max-width:800px) {
+            .main {
+                flex-direction: column
+            }
+
+            .p-left {
+                display: none
+            }
+
+            .p-right {
+                width: 100%;
+                min-width: auto;
+                max-height: 45%;
+                border-left: none;
+                border-top: 1px solid var(--glass-border)
+            }
+
+            .tab-pane-dashboard {
+                min-height: 150px
+            }
+
+            .mg {
+                grid-template-columns: repeat(2, 1fr)
+            }
+
+            .ag {
+                grid-template-columns: repeat(3, 1fr)
+            }
+
+            .lp {
+                height: 120px;
+                min-height: 60px
+            }
+        }
+
+        @media(max-width:600px) {
+            .mg {
+                grid-template-columns: 1fr 1fr
+            }
+
+            .ag {
+                grid-template-columns: repeat(2, 1fr)
+            }
+
+            .p-right {
+                width: 100%;
+                min-width: auto
+            }
+
+            .top-bar {
+                padding: 0 10px
+            }
+
+            .hud {
+                display: none
+            }
+
+            .center-tabs {
+                min-height: 28px
+            }
+
+            .center-tab {
+                padding: 0 8px;
+                font-size: 9px;
+                height: 28px
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="particle-canvas"></canvas>
+    <div class="cyber-grid"></div>
+    <div class="scanlines"></div>
+    <div class="vignette"></div>
+    <div class="ambient-glow"></div>
+    <div class="ambient-glow-2"></div>
+    <div class="ambient-glow-3"></div>
+
+    <div class="app">
+        <div class="top-bar">
+            <div class="logo">FLOWORK OS <span>v2.0</span></div>
+            <div class="hud">
+                <div class="hud-i"><span class="hud-l">FPS</span><span class="hud-v" id="hud-fps">60</span></div>
+                <div class="hud-i"><span class="hud-l">CPU</span><span class="hud-v" id="hud-cpu">–</span></div>
+                <div class="hud-i"><span class="hud-l">GPU</span><span class="hud-v" id="hud-gpu">–</span></div>
+                <div class="hud-i"><span class="hud-l">RAM</span><span class="hud-v" id="hud-ram">–</span></div>
+                <div class="hud-i"><span class="hud-l">VRAM</span><span class="hud-v" id="hud-vram">–</span></div>
+                <div class="hud-i"><span class="hud-l">LAT</span><span class="hud-v" id="hud-lat">–</span></div>
+            </div>
+            <div class="panel-toggles">
+                <button class="tog-btn active" id="tog-files" onclick="togglePanel('files')"
+                    title="Toggle File Manager (Ctrl+B)">📁 Files</button>
+                <button class="tog-btn active" id="tog-log" onclick="togglePanel('log')"
+                    title="Toggle Terminal / Log (Ctrl+J)">📋 Log</button>
+                <button class="tog-btn active" id="tog-chat" onclick="togglePanel('chat')"
+                    title="Toggle AI Chat (Ctrl+/)">💬 Chat</button>
+            </div>
+            <div class="st">
+                <span style="color:var(--text-dim);font-size:9px" id="hud-clock">00:00:00</span>
+                <div class="st-dot"></div>
+                <span style="color:var(--accent-2);font-size:9px;font-weight:600">ONLINE</span>
+            </div>
+        </div>
+
+        <div class="main">
+            <!-- LEFT: FILE MANAGER (always visible) -->
+            <div class="p-left">
+                <div class="fm-header">
+                    <span class="fm-title">📁 Files</span>
+                    <div class="fm-actions">
+                        <button class="fm-btn" onclick="refreshDashFM()" title="Refresh">🗘</button>
+                        <button class="fm-btn" onclick="dashFMNewFile(false)" title="New File">📄</button>
+                        <button class="fm-btn" onclick="dashFMNewFolder(false)" title="New Folder">📁</button>
+                        <label class="fm-btn fm-btn-add" title="Upload files">
+                            ＋ Add
+                            <input type="file" id="dash-fm-upload" multiple style="display:none"
+                                onchange="dashFMUpload(this.files)">
+                        </label>
+                    </div>
+                </div>
+                <div class="fm-breadcrumb" id="dash-fm-breadcrumb">
+                    <span class="fm-crumb fm-crumb-active">📂 workspace</span>
+                </div>
+                <div class="fm-list" id="dash-fm-list">
+                    <div style="color:var(--text-dim);text-align:center;padding:30px 10px;font-size:10px">
+                        <div style="font-size:24px;margin-bottom:8px;opacity:.4">📂</div>
+                        Loading workspace...
+                    </div>
+                </div>
+                <div class="fm-status">
+                    <span id="dash-fm-count">0 files</span>
+                    <span id="dash-fm-size">0 B</span>
+                </div>
+            </div>
+
+            <!-- CENTER WRAPPER (tabs + content + log) -->
+            <div class="p-center-wrap">
+                <!-- VS Code Tab Bar -->
+                <div class="center-tabs" id="center-tabs">
+                    <div class="center-tab active permanent" data-tab="mission-control"
+                        onclick="switchCenterTab('mission-control')">
+                        <span class="center-tab-icon">🖥</span>
+                        Mission Control
+                    </div>
+                </div>
+
+                <!-- Tab Content Area -->
+                <div class="center-content" id="center-content">
+                    <!-- Mission Control Pane (permanent) -->
+                    <div class="tab-pane tab-pane-dashboard active" id="pane-mission-control">
+                        <div>
+                            <div class="st-h">System Metrics</div>
+                            <div class="mg">
+                                <div class="gc mc">
+                                    <svg class="gauge-svg" viewBox="0 0 100 100">
+                                        <circle class="gauge-bg" cx="50" cy="50" r="38" />
+                                        <circle class="gauge-fill" cx="50" cy="50" r="38" stroke-dasharray="238.76"
+                                            stroke-dashoffset="238.76" transform="rotate(-90 50 50)" id="g-cpu"
+                                            style="stroke:var(--accent-1);filter:drop-shadow(0 0 12px rgba(59,130,246,.7))" />
+                                        <text class="gauge-text" x="50" y="50" text-anchor="middle" dy="5" id="g-cpu-t"
+                                            style="fill:var(--accent-6)">0%</text>
+                                    </svg>
+                                    <div class="ml">CPU</div>
+                                    <div class="ms" id="cpu-model">–</div>
+                                </div>
+                                <div class="gc mc">
+                                    <svg class="gauge-svg" viewBox="0 0 100 100">
+                                        <circle class="gauge-bg" cx="50" cy="50" r="38" />
+                                        <circle class="gauge-fill" cx="50" cy="50" r="38" stroke-dasharray="238.76"
+                                            stroke-dashoffset="238.76" transform="rotate(-90 50 50)" id="g-gpu"
+                                            style="stroke:var(--accent-4);filter:drop-shadow(0 0 12px rgba(244,114,182,.7))" />
+                                        <text class="gauge-text" x="50" y="50" text-anchor="middle" dy="5" id="g-gpu-t"
+                                            style="fill:var(--accent-4)">0%</text>
+                                    </svg>
+                                    <div class="ml">GPU</div>
+                                    <div class="ms" id="gpu-model">–</div>
+                                </div>
+                                <div class="gc mc">
+                                    <svg class="gauge-svg" viewBox="0 0 100 100">
+                                        <circle class="gauge-bg" cx="50" cy="50" r="38" />
+                                        <circle class="gauge-fill" cx="50" cy="50" r="38" stroke-dasharray="238.76"
+                                            stroke-dashoffset="238.76" transform="rotate(-90 50 50)" id="g-ram"
+                                            style="stroke:var(--accent-3);filter:drop-shadow(0 0 12px rgba(139,92,246,.7))" />
+                                        <text class="gauge-text" x="50" y="50" text-anchor="middle" dy="5" id="g-ram-t"
+                                            style="fill:var(--accent-3)">0%</text>
+                                    </svg>
+                                    <div class="ml">RAM</div>
+                                    <div class="ms" id="ram-detail">–</div>
+                                </div>
+                                <div class="gc mc">
+                                    <svg class="gauge-svg" viewBox="0 0 100 100">
+                                        <circle class="gauge-bg" cx="50" cy="50" r="38" />
+                                        <circle class="gauge-fill" cx="50" cy="50" r="38" stroke-dasharray="238.76"
+                                            stroke-dashoffset="238.76" transform="rotate(-90 50 50)" id="g-temp"
+                                            style="stroke:var(--accent-5);filter:drop-shadow(0 0 12px rgba(251,191,36,.7))" />
+                                        <text class="gauge-text" x="50" y="50" text-anchor="middle" dy="5" id="g-temp-t"
+                                            style="fill:var(--accent-5)">–°</text>
+                                    </svg>
+                                    <div class="ml">TEMP</div>
+                                    <div class="ms" id="temp-detail">–</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="st-h">Quick Access</div>
+                            <div class="ag">
+                                <div class="gc ac" onclick="navigateTo('botfarm')"><span class="ai-icon">🤖</span><span
+                                        class="al">Bot Farm</span></div>
+                                <div class="gc ac" onclick="navigateTo('browser')"><span class="ai-icon">🌐</span><span
+                                        class="al">Browser</span></div>
+                                <div class="gc ac" onclick="navigateTo('training')"><span class="ai-icon">🧠</span><span
+                                        class="al">AI Train</span></div>
+                                <div class="gc ac" onclick="navigateTo('flow')"><span class="ai-icon">🔗</span><span
+                                        class="al">Flow</span></div>
+                                <div class="gc ac" onclick="navigateTo('store')"><span class="ai-icon">🏪</span><span
+                                        class="al">Store</span></div>
+                                <div class="gc ac" onclick="navigateTo('tutorial')"><span class="ai-icon">📺</span><span
+                                        class="al">Tutorial</span></div>
+                                <div class="gc ac" onclick="navigateTo('settings')"><span class="ai-icon">⚙️</span><span
+                                        class="al">Settings</span></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="st-h">Agent Body Status</div>
+                            <div class="bsg" id="body-status"></div>
+                        </div>
+                    </div><!-- /pane-mission-control -->
+                </div><!-- /center-content -->
+
+                <!-- ENGINE LOG (bottom of center column) -->
+                <div class="lp">
+                    <div class="lh"><span class="lt">📋 Engine Log</span><button class="lcb"
+                            onclick="clearLogs()">CLEAR</button></div>
+                    <div class="lc" id="log-container"></div>
+                </div>
+            </div>
+
+            <!-- RIGHT: CHAT (full height) -->
+            <div class="p-right">
+                <div class="np">
+                    <div class="nh" style="flex-direction:column;align-items:flex-start;gap:6px">
+                        <div style="display:flex;justify-content:space-between;width:100%;align-items:center;">
+                            <span class="nt">⚡ AI ASSISTANT</span>
+                            <div style="display:flex; gap: 4px; align-items:center;">
+                                <button id="btn-new-chat"
+                                    style="background:linear-gradient(135deg,rgba(59,130,246,0.2),rgba(139,92,246,0.2));border:1px solid rgba(59,130,246,0.3);color:#38bdf8;padding:3px 8px;border-radius:6px;font-size:9px;cursor:pointer;font-family:var(--font-mono);font-weight:600;transition:all .2s;"
+                                    title="New Chat">✨ NEW</button>
+                                <button id="btn-chat-history"
+                                    style="background:transparent;border:1px solid rgba(139,92,246,0.3);color:#8b5cf6;padding:3px 8px;border-radius:6px;font-size:9px;cursor:pointer;font-family:var(--font-mono);font-weight:600;transition:all .2s;"
+                                    title="Chat History">📋 HISTORY</button>
+                                <button id="btn-ai-persona"
+                                    style="background:transparent;border:1px solid rgba(251,191,36,0.3);color:#fbbf24;padding:3px 8px;border-radius:6px;font-size:9px;cursor:pointer;font-family:var(--font-mono);font-weight:600;transition:all .2s;"
+                                    title="AI Personalization">⚙️</button>
+                                <button onclick="window.clearChatHistory && window.clearChatHistory()"
+                                    style="background:transparent;border:1px solid rgba(255,100,100,0.3);color:#f87171;padding:3px 6px;border-radius:6px;font-size:9px;cursor:pointer;font-family:var(--font-mono);"
+                                    title="Clear Chat">🗑</button>
+                                <span class="bd bd-off" id="ai-status-dot" title="Status"></span>
+                            </div>
+                        </div>
+                        <!-- Hidden configs for Agent Engine -->
+                        <input type="hidden" id="select-provider">
+                        <input type="hidden" id="input-api-key">
+                        <input type="hidden" id="input-app-name" value="dashboard-agent">
+                        <input type="hidden" id="select-language" value="javascript">
+                        <input type="hidden" id="select-output-type" value="run_task">
+                    </div>
+                    <div style="flex:1; position:relative; display:flex; flex-direction:column; overflow:hidden;">
+                        <!-- EMPTY CHAT STATE OVERLAY -->
+                        <div id="chat-empty-state"
+                            style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:20px; z-index:10; pointer-events:none;">
+                            <div
+                                style="font-size:40px;filter:drop-shadow(0 4px 15px rgba(59,130,246,0.4)); pointer-events:auto;">
+                                🤖</div>
+                            <div
+                                style="font-family:var(--font-display);font-size:13px;font-weight:700;letter-spacing:2px;background:linear-gradient(135deg,#38bdf8,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text; pointer-events:auto;">
+                                FLOWORK AI</div>
+                            <div
+                                style="color:var(--text-dim);font-size:11px;text-align:center;font-family:var(--font-mono);line-height:1.6; pointer-events:auto;">
+                                Select a mode to get started<br>— or just type in the chat</div>
+                            <div
+                                style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:4px; pointer-events:auto;">
+                                <div class="chat-mode-card" onclick="setChatMode('code')"
+                                    style="cursor:pointer;padding:10px 14px;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:10px;text-align:center;transition:all .2s;min-width:80px;">
+                                    <div style="font-size:20px;margin-bottom:4px;">💻</div>
+                                    <div
+                                        style="font-size:9px;font-weight:600;color:#38bdf8;font-family:var(--font-mono);letter-spacing:1px;">
+                                        CODE</div>
+                                </div>
+                                <div class="chat-mode-card" onclick="setChatMode('research')"
+                                    style="cursor:pointer;padding:10px 14px;background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.2);border-radius:10px;text-align:center;transition:all .2s;min-width:80px;">
+                                    <div style="font-size:20px;margin-bottom:4px;">🔍</div>
+                                    <div
+                                        style="font-size:9px;font-weight:600;color:#8b5cf6;font-family:var(--font-mono);letter-spacing:1px;">
+                                        RESEARCH</div>
+                                </div>
+                                <div class="chat-mode-card" onclick="setChatMode('design')"
+                                    style="cursor:pointer;padding:10px 14px;background:rgba(244,114,182,0.08);border:1px solid rgba(244,114,182,0.2);border-radius:10px;text-align:center;transition:all .2s;min-width:80px;">
+                                    <div style="font-size:20px;margin-bottom:4px;">🎨</div>
+                                    <div
+                                        style="font-size:9px;font-weight:600;color:#f472b6;font-family:var(--font-mono);letter-spacing:1px;">
+                                        DESIGN</div>
+                                </div>
+                                <div class="chat-mode-card" onclick="setChatMode('auto')"
+                                    style="cursor:pointer;padding:10px 14px;background:rgba(6,214,160,0.08);border:1px solid rgba(6,214,160,0.2);border-radius:10px;text-align:center;transition:all .2s;min-width:80px;">
+                                    <div style="font-size:20px;margin-bottom:4px;">🤖</div>
+                                    <div
+                                        style="font-size:9px;font-weight:600;color:#06d6a0;font-family:var(--font-mono);letter-spacing:1px;">
+                                        AUTO</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="cms" id="chat-history"
+                            style="flex:1; overflow-y:auto; padding: 10px; display:flex; flex-direction:column; gap:8px;">
+                        </div>
+                    </div>
+                    <div class="chat-input-area">
+                        <div id="chat-image-preview"
+                            style="display: none; position: absolute; bottom: calc(100% + 15px); left: 15px; background: rgba(14,21,40,0.96); padding: 6px; border-radius: 12px; border: 1px solid var(--glass-border); box-shadow: 0 8px 24px rgba(0,0,0,0.6); z-index: 10; animation: fadeIn 0.2s;">
+                            <img id="chat-image-img" src=""
+                                style="height: 60px; border-radius: 6px; object-fit: cover; border: 1px solid rgba(255,255,255,0.1);">
+                            <span id="chat-image-remove"
+                                style="position: absolute; top: -10px; right: -10px; background: rgba(239,68,68,0.9); color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 11px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; border: 2px solid #0e1528; box-shadow: 0 2px 8px rgba(0,0,0,0.4); transition: transform 0.2s;">✕</span>
+                        </div>
+                        <input type="file" id="chat-image-upload"
+                            accept="image/png, image/jpeg, image/webp, image/gif, image/svg+xml, video/mp4, application/pdf, text/plain, text/csv, application/json, .py, .js, .ts, .go, .rb, .c, .cpp, .html, .css"
+                            style="display: none;">
+                        <button id="btn-attach"
+                            style="background: transparent; border: none; color: var(--text-dim); font-size: 1.3rem; cursor: pointer; padding: 6px; margin-right: 4px; border-radius: 50%; transition: all 0.2s; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px;"
+                            title="Attach Context">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path
+                                    d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48">
+                                </path>
+                            </svg>
+                        </button>
+                        <textarea class="ci" id="chat-input" placeholder="Ask Flowork to build or fix something..."
+                            rows="1" autocomplete="off"></textarea>
+                        <button class="csb" id="btn-send" data-flowork-action="sendMessage" title="Send Request">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="22" y1="2" x2="11" y2="13"></line>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CHAT HISTORY DRAWER -->
+            <div id="chat-history-drawer"
+                style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:100001;">
+                <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);backdrop-filter:blur(3px);"
+                    onclick="closeChatHistoryDrawer()"></div>
+                <div
+                    style="position:absolute;right:0;top:0;width:320px;height:100%;background:rgba(14,21,40,0.98);border-left:1px solid var(--glass-border);display:flex;flex-direction:column;box-shadow:-8px 0 30px rgba(0,0,0,0.6);">
+                    <div
+                        style="padding:14px 16px;border-bottom:1px solid var(--glass-border);display:flex;justify-content:space-between;align-items:center;background:rgba(59,130,246,0.04);">
+                        <span
+                            style="font-family:var(--font-display);font-size:11px;font-weight:700;letter-spacing:2px;color:#38bdf8;">📋
+                            CHAT HISTORY</span>
+                        <button onclick="closeChatHistoryDrawer()"
+                            style="background:transparent;border:none;color:var(--text-dim);cursor:pointer;font-size:16px;">&times;</button>
+                    </div>
+                    <div id="chat-history-list" style="flex:1;overflow-y:auto;padding:8px;">
+                        <div
+                            style="color:var(--text-dim);text-align:center;padding:40px 10px;font-size:10px;font-family:var(--font-mono);">
+                            Loading sessions...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI PERSONALIZATION MODAL -->
+            <div id="ai-persona-modal"
+                style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:100002;justify-content:center;align-items:center;">
+                <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);backdrop-filter:blur(3px);"
+                    onclick="closePersonaModal()"></div>
+                <div
+                    style="position:relative;background:rgba(14,21,40,0.98);border:1px solid var(--glass-border);border-radius:14px;padding:24px;width:380px;box-shadow:0 10px 40px rgba(0,0,0,0.6),var(--glow-blue);display:flex;flex-direction:column;gap:14px;z-index:1;">
+                    <div
+                        style="font-family:var(--font-display);font-size:12px;font-weight:700;letter-spacing:2px;color:#fbbf24;display:flex;align-items:center;gap:8px;">
+                        ⚙️ AI PERSONALIZATION</div>
+                    <div style="display:flex;flex-direction:column;gap:10px;">
+                        <label
+                            style="font-size:10px;color:var(--text-dim);font-family:var(--font-mono);font-weight:600;">AI
+                            NAME</label>
+                        <input type="text" id="persona-name" placeholder="Flowork AI"
+                            style="background:rgba(59,130,246,0.05);border:1px solid var(--glass-border);border-radius:8px;padding:8px 12px;color:var(--accent-6);font-family:var(--font-mono);font-size:11px;outline:none;">
+                        <label
+                            style="font-size:10px;color:var(--text-dim);font-family:var(--font-mono);font-weight:600;">LANGUAGE</label>
+                        <select id="persona-lang"
+                            style="background:rgba(59,130,246,0.05);border:1px solid var(--glass-border);border-radius:8px;padding:8px 12px;color:var(--accent-6);font-family:var(--font-mono);font-size:11px;outline:none;">
+                            <option value="auto">Auto Detect</option>
+                            <option value="id">Bahasa Indonesia</option>
+                            <option value="en">English</option>
+                            <option value="ja">日本語</option>
+                        </select>
+                        <label
+                            style="font-size:10px;color:var(--text-dim);font-family:var(--font-mono);font-weight:600;">RESPONSE
+                            STYLE</label>
+                        <select id="persona-style"
+                            style="background:rgba(59,130,246,0.05);border:1px solid var(--glass-border);border-radius:8px;padding:8px 12px;color:var(--accent-6);font-family:var(--font-mono);font-size:11px;outline:none;">
+                            <option value="concise">Concise</option>
+                            <option value="detailed">Detailed</option>
+                            <option value="friendly">Friendly</option>
+                            <option value="professional">Professional</option>
+                        </select>
+                        <label
+                            style="font-size:10px;color:var(--text-dim);font-family:var(--font-mono);font-weight:600;">CUSTOM
+                            SYSTEM PROMPT</label>
+                        <textarea id="persona-prompt" rows="3" placeholder="e.g. Always respond in Bahasa Indonesia..."
+                            style="background:rgba(59,130,246,0.05);border:1px solid var(--glass-border);border-radius:8px;padding:8px 12px;color:var(--accent-6);font-family:var(--font-mono);font-size:11px;outline:none;resize:none;"></textarea>
+                    </div>
+                    <div style="display:flex;gap:10px;">
+                        <button onclick="closePersonaModal()"
+                            style="flex:1;padding:8px;background:transparent;border:1px solid var(--glass-border);border-radius:8px;color:var(--text-dim);cursor:pointer;font-family:var(--font-mono);font-size:10px;">Cancel</button>
+                        <button onclick="savePersona()"
+                            style="flex:1;padding:8px;background:linear-gradient(135deg,var(--accent-1),var(--accent-3));border:none;border-radius:8px;color:#fff;cursor:pointer;font-family:var(--font-mono);font-size:10px;font-weight:700;">💾
+                            Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- File Manager Context Menu -->
+    <div id="fm-ctx"
+        style="display:none;position:fixed;z-index:9999;background:rgba(14,21,40,0.96);border:1px solid var(--glass-border);border-radius:8px;padding:5px 0;min-width:180px;box-shadow:0 6px 25px rgba(0,0,0,0.6),var(--glow-blue);backdrop-filter:blur(12px)">
+        <div class="ctx-item" onclick="dashFMOpenInTab()">📄 Open in Tab</div>
+        <div style="height:1px;background:var(--glass-border);margin:4px 0"></div>
+        <div class="ctx-item" id="ctx-new-file" onclick="dashFMNewFile(true)">📄 New File Here</div>
+        <div class="ctx-item" id="ctx-new-folder" onclick="dashFMNewFolder(true)">📁 New Folder Here</div>
+        <div style="height:1px;background:var(--glass-border);margin:4px 0"></div>
+        <div class="ctx-item" onclick="dashFMRename()">✏️ Rename</div>
+        <div style="height:1px;background:var(--glass-border);margin:4px 0"></div>
+        <div class="ctx-item" onclick="dashFMCopyPath()">📋 Copy Absolute Path</div>
+        <div class="ctx-item" onclick="dashFMCopyRelPath()">📋 Copy Relative Path</div>
+        <div style="height:1px;background:var(--glass-border);margin:4px 0"></div>
+        <div class="ctx-item ctx-item-del" onclick="dashFMDelete()" style="color:var(--accent-7)">🗑️ Delete</div>
+    </div>
+
+    <script>
+        // ═══ FUTURISTIC PARTICLE SYSTEM ═══
+        (function () {
+            const c = document.getElementById('particle-canvas'), x = c.getContext('2d');
+            let w = c.width = innerWidth, h = c.height = innerHeight;
+            const particles = []; const PARTICLE_COUNT = 90; const CONNECTION_DIST = 130; const MOUSE_RADIUS = 160;
+            let mx = -9999, my = -9999;
+
+            class Particle {
+                constructor() { this.reset() }
+                reset() {
+                    this.x = Math.random() * w; this.y = Math.random() * h;
+                    this.vx = (Math.random() - .5) * .45; this.vy = (Math.random() - .5) * .45;
+                    this.size = Math.random() * 2.2 + .6;
+                    this.pulse = Math.random() * Math.PI * 2;
+                    const colors = [
+                        { r: 59, g: 130, b: 246 }, { r: 6, g: 214, b: 160 },
+                        { r: 139, g: 92, b: 246 }, { r: 56, g: 189, b: 248 },
+                        { r: 251, g: 191, b: 36 },
+                    ];
+                    this.color = colors[Math.floor(Math.random() * colors.length)];
+                }
+                update() {
+                    this.x += this.vx; this.y += this.vy; this.pulse += .025;
+                    if (this.x < 0 || this.x > w) this.vx *= -1;
+                    if (this.y < 0 || this.y > h) this.vy *= -1;
+                    const dx = this.x - mx, dy = this.y - my, dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < MOUSE_RADIUS) { const force = (1 - dist / MOUSE_RADIUS) * .02; this.vx += dx * force; this.vy += dy * force }
+                }
+                draw() {
+                    const alpha = .5 + Math.sin(this.pulse) * .3;
+                    const c = this.color;
+                    x.beginPath(); x.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    x.fillStyle = `rgba(${c.r},${c.g},${c.b},${alpha})`;
+                    x.fill();
+                    x.beginPath(); x.arc(this.x, this.y, this.size * 4, 0, Math.PI * 2);
+                    x.fillStyle = `rgba(${c.r},${c.g},${c.b},${alpha * .12})`;
+                    x.fill();
+                }
+            }
+
+            for (let i = 0; i < PARTICLE_COUNT; i++) particles.push(new Particle());
+
+            function draw() {
+                x.clearRect(0, 0, w, h);
+                for (let i = 0; i < particles.length; i++) {
+                    particles[i].update(); particles[i].draw();
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const dx = particles[i].x - particles[j].x, dy = particles[i].y - particles[j].y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < CONNECTION_DIST) {
+                            const alpha = (1 - dist / CONNECTION_DIST) * .18;
+                            x.beginPath(); x.moveTo(particles[i].x, particles[i].y); x.lineTo(particles[j].x, particles[j].y);
+                            x.strokeStyle = `rgba(59,130,246,${alpha})`; x.lineWidth = .6; x.stroke();
+                        }
+                    }
+                }
+                requestAnimationFrame(draw);
+            }
+            draw();
+            document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY });
+            onresize = () => { w = c.width = innerWidth; h = c.height = innerHeight; particles.forEach(p => { if (p.x > w) p.x = w; if (p.y > h) p.y = h }) };
+        })();
+
+        // ═══ GAUGE ═══
+        const C = 2 * Math.PI * 38;
+        function sg(id, p, tid, sfx) { const e = document.getElementById(id), t = document.getElementById(tid); if (!e || !t) return; e.style.strokeDashoffset = C - (p / 100) * C; t.textContent = p + (sfx || '%') }
+
+        // ═══ METRICS ═══
+        async function updateMetrics() { try { const m = await window.floworkDesktop.getSystemMetrics(); if (!m) return; sg('g-cpu', m.cpu.usage, 'g-cpu-t'); sg('g-gpu', m.gpu.usage || 0, 'g-gpu-t'); sg('g-ram', m.ram.percent, 'g-ram-t'); sg('g-temp', m.gpu.temp || 0, 'g-temp-t', '°'); document.getElementById('cpu-model').textContent = (m.cpu.model || '').split('@')[0].trim().substring(0, 20); document.getElementById('gpu-model').textContent = m.gpu.available ? m.gpu.name.substring(0, 16) : 'No GPU'; document.getElementById('ram-detail').textContent = m.ram.usedGB + '/' + m.ram.totalGB + 'GB'; document.getElementById('temp-detail').textContent = m.gpu.available ? m.gpu.name.substring(0, 12) : 'N/A'; document.getElementById('hud-cpu').textContent = m.cpu.usage + '%'; document.getElementById('hud-gpu').textContent = (m.gpu.usage || 0) + '%'; document.getElementById('hud-ram').textContent = m.ram.usedGB + 'G'; document.getElementById('hud-vram').textContent = m.gpu.available ? (m.gpu.vramUsed / 1024).toFixed(1) + 'G' : '–' } catch (e) { } }
+
+        // ═══ CLOCK + FPS ═══
+        let lft = performance.now(), fc = 0;
+        function uc() { document.getElementById('hud-clock').textContent = new Date().toLocaleTimeString('en-US', { hour12: false }) }
+        function uf() { fc++; const n = performance.now(); if (n - lft >= 1000) { document.getElementById('hud-fps').textContent = fc; fc = 0; lft = n } requestAnimationFrame(uf) }
+
+        // ═══════════════════════════════════════════════════════════════
+        // FILE MANAGER — Dashboard version (Go API + absolute paths)
+        // ═══════════════════════════════════════════════════════════════
+        let _fmCurrentPath = ''; // absolute path or '' = root
+        let _fmSelectedFile = null;
+        let _fmTreeCache = null; // cached /api/fs/tree response
+
+        const _fmIcons = {
+            mp4: '🎬', webm: '🎬', avi: '🎬', mkv: '🎬', mov: '🎬',
+            mp3: '🎵', wav: '🎵', ogg: '🎵', flac: '🎵',
+            png: '🖼️', jpg: '🖼️', jpeg: '🖼️', gif: '🖼️', webp: '🖼️', svg: '🖼️',
+            txt: '📄', json: '📄', csv: '📄', xml: '📄', log: '📄', md: '📄',
+            py: '🐍', js: '⚡', ts: '⚡', go: '🔷', rb: '💎',
+            html: '🌐', css: '🎨', gguf: '🧠',
+            zip: '📦', tar: '📦', gz: '📦', exe: '⚙️', pdf: '📕',
+            cookie: '🍪', cookies: '🍪'
+        };
+
+        function _fmIcon(name) { return _fmIcons[(name || '').split('.').pop().toLowerCase()] || '📄'; }
+
+        function _fmSize(b) {
+            if (!b) return '';
+            const u = ['B', 'KB', 'MB', 'GB']; let i = 0;
+            while (b >= 1024 && i < u.length - 1) { b /= 1024; i++; }
+            return b.toFixed(i > 0 ? 1 : 0) + ' ' + u[i];
+        }
+
+        function _fmExt(name) { return (name || '').split('.').pop().toLowerCase(); }
+
+        function _fmCat(name) {
+            const ext = _fmExt(name);
+            if (['mp4', 'webm', 'avi', 'mkv', 'mov'].includes(ext)) return { cat: 'video', color: '#3B82F6' };
+            if (['mp3', 'wav', 'ogg', 'flac'].includes(ext)) return { cat: 'audio', color: '#F59E0B' };
+            if (['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'ico'].includes(ext)) return { cat: 'image', color: '#10B981' };
+            if (['cookie', 'cookies'].includes(ext)) return { cat: 'cookie', color: '#EF4444' };
+            if (['js', 'ts', 'py', 'go', 'rb', 'html', 'css', 'json', 'md', 'yaml', 'yml', 'toml', 'sh', 'bat', 'c', 'cpp', 'h', 'java', 'rs', 'lua', 'sql'].includes(ext)) return { cat: 'code', color: '#8B5CF6' };
+            if (['gguf'].includes(ext)) return { cat: 'model', color: '#06D6A0' };
+            if (['zip', 'tar', 'gz', 'rar', '7z'].includes(ext)) return { cat: 'archive', color: '#F472B6' };
+            if (['exe', 'msi', 'dll'].includes(ext)) return { cat: 'binary', color: '#EF4444' };
+            if (['pdf'].includes(ext)) return { cat: 'pdf', color: '#EF4444' };
+            return { cat: 'file', color: '#666' };
+        }
+
+        function _fmIsText(name) {
+            const textExts = ['txt', 'json', 'csv', 'xml', 'log', 'md', 'py', 'js', 'ts', 'go', 'rb', 'html', 'css', 'yaml', 'yml', 'toml', 'ini', 'cfg', 'conf', 'sh', 'bat', 'ps1', 'c', 'cpp', 'h', 'hpp', 'java', 'rs', 'swift', 'kt', 'lua', 'sql', 'env', 'gitignore', 'dockerfile', 'mod', 'sum', 'lock'];
+            return textExts.includes(_fmExt(name));
+        }
+
+        function _fmIsImage(name) { return ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'ico', 'bmp'].includes(_fmExt(name)); }
+        function _fmIsMedia(name) { return ['mp4', 'webm', 'avi', 'mkv', 'mov', 'mp3', 'wav', 'ogg', 'flac'].includes(_fmExt(name)); }
+        function _fmIsVideo(name) { return ['mp4', 'webm', 'avi', 'mkv', 'mov'].includes(_fmExt(name)); }
+
+        // ─── Breadcrumb ─────────────────────────────────────────────
+        function _fmBreadcrumb() {
+            const el = document.getElementById('dash-fm-breadcrumb');
+            if (!_fmCurrentPath) {
+                el.innerHTML = '<span class="fm-crumb fm-crumb-active">📂 Engine</span>';
+                return;
+            }
+            let html = '<span class="fm-crumb" onclick="navigateFM(\'\')">📂 Engine</span>';
+            // Build path segments from the current absolute path relative to Engine root
+            const engineRoot = _fmTreeCache ? _fmTreeCache._engineRoot : '';
+            let relPath = _fmCurrentPath;
+            if (engineRoot && relPath.startsWith(engineRoot)) {
+                relPath = relPath.substring(engineRoot.length).replace(/^[\\/]/, '');
+            }
+            const segments = relPath.split(/[\\/]/).filter(Boolean);
+            let cumPath = engineRoot;
+            segments.forEach((seg, i) => {
+                cumPath = cumPath + (cumPath.endsWith('\\') || cumPath.endsWith('/') ? '' : '\\') + seg;
+                const isLast = i === segments.length - 1;
+                const p = cumPath.replace(/\\/g, '\\\\');
+                html += '<span class="fm-crumb-sep">›</span>';
+                html += `<span class="fm-crumb${isLast ? ' fm-crumb-active' : ''}" onclick="navigateFM('${p}')">${seg}</span>`;
+            });
+            el.innerHTML = html;
+        }
+
+        function navigateFM(path) {
+            _fmCurrentPath = path.replace(/\\\\/g, '\\');
+            refreshDashFM();
+        }
+
+        // ─── Tree state ────────────────────────────────────────────
+        const _treeState = {}; // path → { open: bool, children: [] }
+
+        // ─── Fetch tree and render ──────────────────────────────────
+        async function refreshDashFM() {
+            try {
+                const res = await fetch('http://127.0.0.1:5000/api/fs/tree');
+                const data = await res.json();
+                if (data.status === 'success' && data.data) {
+                    let engineRoot = '';
+                    if (data.data.apps && data.data.apps.length > 0) {
+                        const appPath = data.data.apps[0].path || '';
+                        const parts = appPath.replace(/\//g, '\\').split('\\');
+                        const appsIdx = parts.lastIndexOf('apps');
+                        if (appsIdx > 0) engineRoot = parts.slice(0, appsIdx).join('\\');
+                    } else if (data.data.nodes && data.data.nodes.length > 0) {
+                        const nodePath = data.data.nodes[0].path || '';
+                        const parts = nodePath.replace(/\//g, '\\').split('\\');
+                        const nodesIdx = parts.lastIndexOf('nodes');
+                        if (nodesIdx > 0) engineRoot = parts.slice(0, nodesIdx).join('\\');
+                    }
+                    if (!engineRoot) engineRoot = 'C:\\flowork\\ENGINE';
+                    _fmTreeCache = { _engineRoot: engineRoot, apps: data.data.apps || [], nodes: data.data.nodes || [] };
+                    _renderTree(engineRoot);
+                    return;
+                }
+            } catch (e) { addLog('ERR', 'File Manager: ' + e.message); }
+            _renderTree('');
+        }
+
+        // ─── Render full tree ───────────────────────────────────────
+        function _renderTree(engineRoot) {
+            const list = document.getElementById('dash-fm-list');
+            const rootFolders = [
+                { name: 'apps', icon: '📱', path: engineRoot + '\\apps', is_dir: true },
+                { name: 'nodes', icon: '🧩', path: engineRoot + '\\nodes', is_dir: true },
+                { name: 'tools', icon: '🔧', path: engineRoot + '\\tools', is_dir: true },
+                { name: 'workspace', icon: '📁', path: engineRoot + '\\workspace', is_dir: true },
+                { name: 'workflows', icon: '🔗', path: engineRoot + '\\workflows', is_dir: true },
+                { name: 'models', icon: '🧠', path: engineRoot + '\\models', is_dir: true },
+                { name: 'brain', icon: '🧬', path: engineRoot + '\\brain', is_dir: true },
+                { name: 'flowork_modules', icon: '📦', path: engineRoot + '\\flowork_modules', is_dir: true },
+            ];
+            list.innerHTML = '';
+            rootFolders.forEach(f => {
+                list.appendChild(_buildTreeNode(f, 0));
+            });
+
+            // Update breadcrumb to show root
+            document.getElementById('dash-fm-breadcrumb').innerHTML = '<span class="fm-crumb fm-crumb-active">📂 ENGINE</span>';
+            document.getElementById('dash-fm-count').textContent = rootFolders.length + ' folders';
+            document.getElementById('dash-fm-size').textContent = '';
+        }
+
+        // ─── Build a single tree node (recursive) ────────────────
+        function _buildTreeNode(item, depth) {
+            const wrapper = document.createElement('div');
+            const isDir = item.is_dir;
+            const path = item.path || '';
+            const normPath = path.replace(/\//g, '\\');
+
+            // Row
+            const row = document.createElement('div');
+            row.className = 'tree-row' + (isDir ? ' is-dir' : '');
+            row.title = normPath;
+
+            // Indents
+            for (let i = 0; i < depth; i++) {
+                const indent = document.createElement('span');
+                indent.className = 'tree-indent';
+                row.appendChild(indent);
+            }
+
+            // Arrow (for dirs)
+            const arrow = document.createElement('span');
+            arrow.className = 'tree-arrow' + (isDir ? '' : ' empty');
+            arrow.textContent = '▶';
+            if (isDir && _treeState[normPath] && _treeState[normPath].open) {
+                arrow.classList.add('open');
+            }
+            row.appendChild(arrow);
+
+            // Icon
+            const icon = document.createElement('span');
+            icon.className = 'tree-icon';
+            icon.textContent = isDir ? (item.icon || '📂') : _fmIcon(item.name);
+            row.appendChild(icon);
+
+            // Label
+            const label = document.createElement('span');
+            label.className = 'tree-label';
+            label.textContent = item.name;
+            row.appendChild(label);
+
+            // Badge for files
+            if (!isDir && item.size) {
+                const badge = document.createElement('span');
+                badge.className = 'tree-badge';
+                badge.textContent = _fmSize(item.size);
+                row.appendChild(badge);
+            }
+
+            wrapper.appendChild(row);
+
+            // Children container
+            const childrenDiv = document.createElement('div');
+            childrenDiv.className = 'tree-children';
+            wrapper.appendChild(childrenDiv);
+
+            async function loadAndRenderChildren(state) {
+                arrow.textContent = '⏳';
+                try {
+                    const res = await fetch(`http://127.0.0.1:5000/api/fs/list?path=${encodeURIComponent(normPath)}`);
+                    const data = await res.json();
+                    if (data.status === 'success' && data.files) {
+                        state.children = data.files;
+                        state.children.sort((a, b) => {
+                            if (a.is_dir && !b.is_dir) return -1;
+                            if (!a.is_dir && b.is_dir) return 1;
+                            return a.name.localeCompare(b.name);
+                        });
+                        childrenDiv.innerHTML = '';
+                        state.children.forEach(child => {
+                            childrenDiv.appendChild(_buildTreeNode(child, depth + 1));
+                        });
+                        const files = state.children.filter(c => !c.is_dir);
+                        const dirs = state.children.filter(c => c.is_dir);
+                        document.getElementById('dash-fm-count').textContent = `${files.length} files, ${dirs.length} folders`;
+                        let sz = 0; files.forEach(f => sz += (f.size || 0));
+                        document.getElementById('dash-fm-size').textContent = sz > 0 ? _fmSize(sz) : '';
+                    } else {
+                        childrenDiv.innerHTML = '';
+                    }
+                } catch (ex) {
+                    childrenDiv.innerHTML = '<div style="padding:4px 0 4px 32px;color:#f87171;font-size:9px;font-family:var(--font-mono)">⚠ Cannot load</div>';
+                }
+                arrow.textContent = '▶';
+            }
+
+            if (isDir && _treeState[normPath] && _treeState[normPath].open) {
+                childrenDiv.classList.add('open');
+                // Automatically fetch and render children if this was previously open
+                loadAndRenderChildren(_treeState[normPath]);
+            }
+
+            // Drag & Drop
+            row.draggable = true;
+            row.addEventListener('dragstart', (e) => {
+                const selectedElms = document.querySelectorAll('.tree-row.selected');
+                let paths = [];
+                if (row.classList.contains('selected')) {
+                    selectedElms.forEach(el => paths.push(el.title));
+                } else {
+                    paths.push(normPath);
+                }
+                e.dataTransfer.setData('application/json', JSON.stringify(paths));
+                e.dataTransfer.effectAllowed = 'move';
+            });
+
+            function handleSelection(e) {
+                if (e.shiftKey) {
+                    e.preventDefault();
+                    const rows = Array.from(document.querySelectorAll('.tree-row'));
+                    const lastRow = document.querySelector('.tree-row.last-selected') || rows[0];
+                    let idx1 = rows.indexOf(lastRow);
+                    let idx2 = rows.indexOf(row);
+                    if (idx1 > idx2) { const t = idx1; idx1 = idx2; idx2 = t; }
+                    for (let i = idx1; i <= idx2; i++) {
+                        rows[i].classList.add('selected');
+                    }
+                } else if (e.ctrlKey || e.metaKey) {
+                    e.preventDefault();
+                    row.classList.toggle('selected');
+                    document.querySelectorAll('.tree-row.last-selected').forEach(r => r.classList.remove('last-selected'));
+                    row.classList.add('last-selected');
+                } else {
+                    document.querySelectorAll('.tree-row.selected').forEach(r => r.classList.remove('selected'));
+                    document.querySelectorAll('.tree-row.last-selected').forEach(r => r.classList.remove('last-selected'));
+                    row.classList.add('selected');
+                    row.classList.add('last-selected');
+                }
+            }
+
+            // Click handler
+            if (isDir) {
+                row.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    row.style.background = 'rgba(59,130,246,0.3)';
+                });
+                row.addEventListener('dragleave', () => {
+                    row.style.background = '';
+                });
+                row.addEventListener('drop', async (e) => {
+                    e.preventDefault();
+                    row.style.background = '';
+                    const data = e.dataTransfer.getData('application/json');
+                    if (!data) return;
+                    let paths;
+                    try { paths = JSON.parse(data); } catch (ex) { return; }
+                    let moved = 0;
+                    for (const p of paths) {
+                        if (p === normPath || normPath.startsWith(p + '\\')) continue;
+                        const name = p.split('\\').pop();
+                        const targetPath = normPath + '\\' + name;
+                        try {
+                            const res = await fetch('http://127.0.0.1:5000/api/fs/rename', {
+                                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ old_path: p, new_path: targetPath })
+                            });
+                            if (res.ok) {
+                                const json = await res.json();
+                                if (json.status === 'success') moved++;
+                            }
+                        } catch (ex) { }
+                    }
+                    if (moved > 0) {
+                        addLog('SYS', `🚚 Moved ${moved} items to ${item.name}`);
+                        _fmSelectedFiles = [];
+                        refreshDashFM();
+                    }
+                });
+
+                row.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+
+                    if (e.shiftKey || e.ctrlKey || e.metaKey) {
+                        handleSelection(e);
+                        return; // Prevent expand/collapse when mass selecting
+                    }
+                    handleSelection(e);
+
+                    const state = _treeState[normPath] || { open: false, children: null };
+                    state.open = !state.open;
+                    _treeState[normPath] = state;
+
+                    arrow.classList.toggle('open', state.open);
+                    childrenDiv.classList.toggle('open', state.open);
+
+                    // Update breadcrumb
+                    _updateBreadcrumb(normPath);
+
+                    if (state.open) {
+                        if (!state.children || childrenDiv.childElementCount === 0) {
+                            await loadAndRenderChildren(state);
+                        } else {
+                            // Already loaded — just update numbers
+                            const files = state.children.filter(c => !c.is_dir);
+                            const dirs = state.children.filter(c => c.is_dir);
+                            document.getElementById('dash-fm-count').textContent = `${files.length} files, ${dirs.length} folders`;
+                        }
+                    }
+                });
+
+                // Right click
+                row.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                    _fmCtx(e, normPath.replace(/\\/g, '\\\\'), item.name, true);
+                });
+            } else {
+                // File click → select & open
+                row.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (e.shiftKey || e.ctrlKey || e.metaKey) {
+                        handleSelection(e);
+                        return; // Prevent open when mass selecting
+                    }
+                    handleSelection(e);
+                    dashFMOpenFile(normPath.replace(/\\/g, '\\\\'), item.name);
+                });
+
+                // File right click
+                row.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                    _fmCtx(e, normPath.replace(/\\/g, '\\\\'), item.name, false);
+                });
+            }
+
+            return wrapper;
+        }
+
+        // Update breadcrumb from path
+        function _updateBreadcrumb(absPath) {
+            const el = document.getElementById('dash-fm-breadcrumb');
+            const engineRoot = _fmTreeCache ? _fmTreeCache._engineRoot : '';
+            let relPath = absPath;
+            if (engineRoot && relPath.startsWith(engineRoot)) {
+                relPath = relPath.substring(engineRoot.length).replace(/^[\\/]/, '');
+            }
+            const segments = relPath.split(/[\\/]/).filter(Boolean);
+            let html = '<span class="fm-crumb fm-crumb-active">📂 ENGINE</span>';
+            segments.forEach(seg => {
+                html += '<span class="fm-crumb-sep">›</span><span class="fm-crumb">' + seg + '</span>';
+            });
+            el.innerHTML = html;
+        }
+
+        // Refresh a specific folder in place (re-load children)
+        function navigateFM(path) {
+            const normPath = path.replace(/\\\\/g, '\\');
+            if (_treeState[normPath]) {
+                _treeState[normPath].children = null; // force reload
+                _treeState[normPath].open = false;
+            }
+            refreshDashFM();
+        }
+
+        function _fmCopyToChat(path) {
+            const cleanPath = path.replace(/\\\\/g, '\\').replace(/\\/g, '/');
+            const chatInput = document.getElementById('chat-input');
+            if (chatInput) { chatInput.value += (chatInput.value ? ' ' : '') + cleanPath; chatInput.focus(); }
+            addLog('SYS', '📋 Copied: ' + cleanPath);
+        }
+
+        async function _fmDel(path, name) {
+            const cleanPath = path.replace(/\\\\/g, '\\');
+            if (!confirm('Delete "' + name + '"?')) return;
+            try {
+                await fetch(`http://127.0.0.1:5000/api/fs/delete?path=${encodeURIComponent(cleanPath)}`, { method: 'DELETE' });
+                addLog('WARN', '🗑 Deleted: ' + name);
+
+                // Clear from tree state including children
+                Object.keys(_treeState).forEach(key => {
+                    if (key === cleanPath || key.startsWith(cleanPath + '\\')) {
+                        delete _treeState[key];
+                    }
+                });
+
+                // Clear from selection cache so we don't accidentally delete it again
+                if (_fmSelectedFile && _fmSelectedFile.path === cleanPath) {
+                    _fmSelectedFile = null;
+                }
+
+                refreshDashFM();
+            } catch (e) { addLog('ERR', 'Delete failed: ' + e.message); }
+        }
+
+        async function dashFMUpload(files) {
+            if (!files || files.length === 0) return;
+            for (const f of files) {
+                try {
+                    const formData = new FormData();
+                    formData.append('file', f);
+                    formData.append('target_path', _fmCurrentPath || 'workspace');
+                    await fetch('http://127.0.0.1:5000/api/upload', { method: 'POST', body: formData });
+                    addLog('SYS', '📤 Uploaded: ' + f.name);
+                } catch (e) {
+                    addLog('ERR', '❌ Upload failed: ' + f.name);
+                }
+            }
+            document.getElementById('dash-fm-upload').value = '';
+            setTimeout(() => refreshDashFM(), 500);
+        }
+
+        // Context menu
+        function _fmCtx(e, path, name, isDir) {
+            const clickedRow = e.currentTarget;
+            if (clickedRow && !clickedRow.classList.contains('selected')) {
+                document.querySelectorAll('.tree-row.selected').forEach(r => r.classList.remove('selected'));
+                document.querySelectorAll('.tree-row.last-selected').forEach(r => r.classList.remove('last-selected'));
+                clickedRow.classList.add('selected');
+                clickedRow.classList.add('last-selected');
+            }
+            _fmSelectedFile = { path: path.replace(/\\\\/g, '\\'), name, isDir };
+            const ctx = document.getElementById('fm-ctx');
+            ctx.style.display = 'block';
+            ctx.style.left = e.clientX + 'px';
+            ctx.style.top = e.clientY + 'px';
+
+            // Toggle visibility of "New File Here" / "New Folder Here" based on whether it's a directory
+            document.getElementById('ctx-new-file').style.display = isDir ? 'block' : 'none';
+            document.getElementById('ctx-new-folder').style.display = isDir ? 'block' : 'none';
+        }
+        function dashFMCopyPath() { if (_fmSelectedFile) _fmCopyToChat(_fmSelectedFile.path); }
+        function dashFMCopyRelPath() {
+            if (_fmSelectedFile) {
+                const enginePath = window.electronAPI && window.electronAPI.cwd ? window.electronAPI.cwd() : '';
+                let rel = _fmSelectedFile.path.replace(enginePath, '');
+                if (rel.startsWith('\\') || rel.startsWith('/')) rel = rel.substring(1);
+                _fmCopyToChat(rel);
+            }
+        }
+        async function dashFMDelete() {
+            const selectedRows = document.querySelectorAll('.tree-row.selected');
+            const paths = [];
+            selectedRows.forEach(row => paths.push({ path: row.title, name: row.querySelector('.tree-label').textContent }));
+
+            if (paths.length === 0) return;
+
+            if (paths.length === 1) {
+                _fmDel(paths[0].path, paths[0].name);
+            } else {
+                if (!confirm(`Delete ${paths.length} items permanently?`)) return;
+                let deletedCount = 0;
+                for (const p of paths) {
+                    try {
+                        const res = await fetch(`http://127.0.0.1:5000/api/fs/delete?path=${encodeURIComponent(p.path)}`, { method: 'DELETE' });
+                        if (res.ok) deletedCount++;
+                        // Clear state
+                        Object.keys(_treeState).forEach(key => {
+                            if (key === p.path || key.startsWith(p.path + '\\')) {
+                                delete _treeState[key];
+                            }
+                        });
+                    } catch (e) { }
+                }
+                addLog('WARN', `🗑 Deleted ${deletedCount} items.`);
+                refreshDashFM();
+            }
+        }
+        function dashFMOpenInTab() { if (_fmSelectedFile && !_fmSelectedFile.isDir) dashFMOpenFile(_fmSelectedFile.path.replace(/\\/g, '\\\\'), _fmSelectedFile.name); }
+
+        async function dashFMNewFile(useSelected = false) {
+            const targetDir = (useSelected && _fmSelectedFile && _fmSelectedFile.isDir) ? _fmSelectedFile.path : _fmCurrentPath;
+            if (!targetDir) return alert('Select a folder first or navigate to a directory.');
+            const name = prompt('New file name (e.g. index.css):');
+            if (!name) return;
+            try {
+                const res = await fetch('http://127.0.0.1:5000/api/fs/write', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ path: targetDir + '\\' + name, content: '' })
+                });
+                const data = await res.json();
+                if (data.status === 'success') { addLog('SYS', `📄 Created file: ${name}`); refreshDashFM(); }
+                else addLog('ERR', `❌ Failed to create file: ${data.error}`);
+            } catch (e) { addLog('ERR', 'Error creating file'); }
+        }
+
+        async function dashFMNewFolder(useSelected = false) {
+            const targetDir = (useSelected && _fmSelectedFile && _fmSelectedFile.isDir) ? _fmSelectedFile.path : _fmCurrentPath;
+            if (!targetDir) return alert('Select a folder first or navigate to a directory.');
+            const name = prompt('New folder name:');
+            if (!name) return;
+            try {
+                const res = await fetch('http://127.0.0.1:5000/api/fs/mkdir', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ path: targetDir + '\\' + name })
+                });
+                const data = await res.json();
+                if (data.status === 'success') { addLog('SYS', `📁 Created folder: ${name}`); refreshDashFM(); }
+                else addLog('ERR', `❌ Failed to create folder: ${data.error}`);
+            } catch (e) { addLog('ERR', 'Error creating folder'); }
+        }
+
+        async function dashFMRename() {
+            if (!_fmSelectedFile) return;
+            const newName = prompt('Rename to:', _fmSelectedFile.name);
+            if (!newName || newName === _fmSelectedFile.name) return;
+            const dir = _fmSelectedFile.path.substring(0, _fmSelectedFile.path.lastIndexOf('\\'));
+            try {
+                const res = await fetch('http://127.0.0.1:5000/api/fs/rename', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ old_path: _fmSelectedFile.path, new_path: dir + '\\' + newName })
+                });
+                const data = await res.json();
+                if (data.status === 'success') { addLog('SYS', `✏️ Renamed to: ${newName}`); refreshDashFM(); }
+                else { addLog('ERR', `❌ Rename failed: ${data.error}`); alert(data.error); }
+            } catch (e) { addLog('ERR', 'Error renaming'); }
+        }
+
+        document.addEventListener('click', (e) => {
+            const ctx = document.getElementById('fm-ctx');
+            if (ctx && ctx.style.display !== 'none') {
+                ctx.style.display = 'none';
+            }
+        });
+
+        // ─── Open file — supports code, image, audio, video ─────────
+        async function dashFMOpenFile(path, name) {
+            const cleanPath = path.replace(/\\\\/g, '\\');
+            const ext = _fmExt(name);
+
+            // IMAGE → open as image preview tab
+            if (_fmIsImage(name)) {
+                openMediaTab(name, 'image', `http://127.0.0.1:5000/api/fs/read?path=${encodeURIComponent(cleanPath)}`);
+                return;
+            }
+
+            // VIDEO → open as video player tab
+            if (_fmIsVideo(name)) {
+                openMediaTab(name, 'video', `http://127.0.0.1:5000/api/fs/read?path=${encodeURIComponent(cleanPath)}`);
+                return;
+            }
+
+            // AUDIO → open as audio player tab
+            if (['mp3', 'wav', 'ogg', 'flac'].includes(ext)) {
+                openMediaTab(name, 'audio', `http://127.0.0.1:5000/api/fs/read?path=${encodeURIComponent(cleanPath)}`);
+                return;
+            }
+
+            // UNSUPPORTED BINARY FILES
+            const binaryExts = ['exe', 'dll', 'so', 'dylib', 'bin', 'zip', 'tar', 'gz', 'rar', '7z', 'iso', 'pdf', 'db', 'sqlite', 'sqlite3', 'jpg', 'jpeg', 'png', 'gif', 'webp', 'mp4', 'mkv', 'avi', 'mov', 'mp3', 'wav', 'ogg', 'flac', 'pyc', 'class'];
+            if (binaryExts.includes(ext.toLowerCase())) {
+                openMediaTab(name, 'unsupported', '');
+                return;
+            }
+
+            // TEXT / CODE → open as code viewer tab
+            try {
+                const res = await fetch(`http://127.0.0.1:5000/api/fs/read?path=${encodeURIComponent(cleanPath)}`);
+                if (res.ok) {
+                    const text = await res.text();
+                    openCodeTab(cleanPath, name, text, false);
+                } else {
+                    addLog('ERR', 'Cannot read: ' + name + ' (' + res.status + ')');
+                }
+            } catch (e) {
+                addLog('ERR', 'Read failed: ' + e.message);
+            }
+        }
+
+        // ─── Media tab (image/video/audio viewer) ───────────────────
+        function openMediaTab(filename, mediaType, url) {
+            const tabId = 'media-' + filename.replace(/[^a-zA-Z0-9_.-]/g, '_');
+            const existing = document.querySelector(`.center-tab[data-tab="${tabId}"]`);
+            if (existing) { switchCenterTab(tabId); return; }
+
+            _centerTabs.push({ id: tabId, label: filename, permanent: false });
+
+            const icon = _fmIcon(filename);
+            const tabBar = document.getElementById('center-tabs');
+            const tab = document.createElement('div');
+            tab.className = 'center-tab';
+            tab.dataset.tab = tabId;
+            tab.onclick = () => switchCenterTab(tabId);
+            tab.onmousedown = (e) => { if (e.button === 1) { e.preventDefault(); closeCenterTab(tabId); } };
+            tab.innerHTML = `<span class="center-tab-icon">${icon}</span>${esc(filename)}<button class="tab-close" onclick="event.stopPropagation();closeCenterTab('${tabId}')" title="Close">×</button>`;
+            tabBar.appendChild(tab);
+
+            const content_area = document.getElementById('center-content');
+            const pane = document.createElement('div');
+            pane.className = 'tab-pane tab-pane-code';
+            pane.id = 'pane-' + tabId;
+            pane.style.cssText = 'display:none;align-items:center;justify-content:center;background:#111;';
+
+            if (mediaType === 'image') {
+                pane.innerHTML = `<div style="flex:1;display:flex;align-items:center;justify-content:center;overflow:auto;padding:20px">
+                    <img src="${url}" style="max-width:100%;max-height:100%;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.5)" onerror="this.outerHTML='<div style=\\'color:#f87171;padding:20px\\'>⚠ Cannot load image</div>'" />
+                </div>`;
+            } else if (mediaType === 'video') {
+                pane.innerHTML = `<div style="flex:1;display:flex;align-items:center;justify-content:center;overflow:auto;padding:20px">
+                    <video controls style="max-width:100%;max-height:100%;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.5)">
+                        <source src="${url}">Your browser does not support video.</video>
+                </div>`;
+            } else if (mediaType === 'audio') {
+                pane.innerHTML = `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:30px">
+                    <div style="font-size:4rem">🎵</div>
+                    <div style="color:#ccc;font-size:14px;font-weight:600">${esc(filename)}</div>
+                    <audio controls style="width:80%;max-width:400px"><source src="${url}">Your browser does not support audio.</audio>
+                </div>`;
+            } else if (mediaType === 'unsupported') {
+                pane.innerHTML = `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:30px;">
+                    <div style="font-size:4rem; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5));">📦</div>
+                    <div style="color:var(--text-main);font-size:16px;font-weight:600;font-family:var(--font-display);letter-spacing:1px;">File Not Supported</div>
+                    <div style="color:var(--text-dim);font-size:12px;text-align:center;max-width:300px;font-family:var(--font-mono);line-height:1.5;">The file <span style="display:inline-block;padding:2px 6px;background:rgba(255,255,255,0.1);border-radius:4px;color:#fff;">${esc(filename)}</span> is a binary or unsupported format. It cannot be displayed in the editor.</div>
+                </div>`;
+            }
+
+            content_area.appendChild(pane);
+            switchCenterTab(tabId);
+            addLog('SYS', '📄 Opened: ' + filename);
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // CENTER TAB SYSTEM — VS Code style
+        // ═══════════════════════════════════════════════════════════════
+        const _centerTabs = [{ id: 'mission-control', label: '🖥 Mission Control', permanent: true }];
+        let _activeTab = 'mission-control';
+
+        function switchCenterTab(tabId) {
+            _activeTab = tabId;
+            // Update tab bar
+            document.querySelectorAll('.center-tab').forEach(t => {
+                t.classList.toggle('active', t.dataset.tab === tabId);
+            });
+            // Update panes
+            document.querySelectorAll('.tab-pane').forEach(p => {
+                p.classList.toggle('active', p.id === 'pane-' + tabId);
+            });
+        }
+
+        function openCodeTab(fullPath, filename, content, isAiWriting) {
+            const tabId = 'code-' + filename.replace(/[^a-zA-Z0-9_.-]/g, '_');
+            // Check if tab already exists
+            const existing = document.querySelector(`.center-tab[data-tab="${tabId}"]`);
+            if (existing) {
+                // Update content
+                const pane = document.getElementById('pane-' + tabId);
+                if (pane) {
+                    const body = pane.querySelector('.code-viewer-body pre');
+                    if (body) body.innerHTML = _renderCode(content);
+                }
+                // Update AI-writing status
+                if (isAiWriting) existing.classList.add('ai-writing');
+                else existing.classList.remove('ai-writing');
+                switchCenterTab(tabId);
+                return;
+            }
+
+            // Add tab to state
+            _centerTabs.push({ id: tabId, label: filename, permanent: false });
+
+            // Determine language/icon
+            const ext = filename.split('.').pop().toLowerCase();
+            const icon = _fmIcon(filename);
+            const langMap = { js: 'JavaScript', ts: 'TypeScript', py: 'Python', go: 'Go', rb: 'Ruby', html: 'HTML', css: 'CSS', json: 'JSON', md: 'Markdown', txt: 'Text', yaml: 'YAML', yml: 'YAML', toml: 'TOML', sh: 'Shell', bat: 'Batch' };
+            const lang = langMap[ext] || ext.toUpperCase();
+
+            // Create tab element
+            const tabBar = document.getElementById('center-tabs');
+            const tab = document.createElement('div');
+            tab.className = 'center-tab' + (isAiWriting ? ' ai-writing' : '');
+            tab.dataset.tab = tabId;
+            tab.onclick = () => switchCenterTab(tabId);
+            tab.onmousedown = (e) => { if (e.button === 1) { e.preventDefault(); closeCenterTab(tabId); } };
+            tab.innerHTML = `<span class="center-tab-icon">${icon}</span>${esc(filename)}<button class="tab-close" onclick="event.stopPropagation();closeCenterTab('${tabId}')" title="Close">×</button>`;
+            tabBar.appendChild(tab);
+
+            // Create pane
+            const content_area = document.getElementById('center-content');
+            const pane = document.createElement('div');
+            pane.className = 'tab-pane tab-pane-code';
+            pane.id = 'pane-' + tabId;
+            // CSS handles display:none -> flex based on .active class
+
+            pane.innerHTML = `
+                <div class="code-viewer-header">
+                    <span class="lang-badge">${lang}</span>
+                    <span class="file-path">${esc(filename)}</span>
+                    <button class="fm-btn" style="margin-left:auto;background:rgba(6,214,160,0.2);color:var(--green);border:1px solid rgba(6,214,160,0.4)" id="save-btn-${tabId}" title="Save (Ctrl+S)">💾 Save</button>
+                </div>
+                <div class="code-viewer-body" style="position:relative;flex:1;">
+                    <pre class="code-view-bg" id="bg-${tabId}"></pre>
+                    <textarea class="code-editor-fg" id="fg-${tabId}" spellcheck="false"></textarea>
+                </div>`;
+            content_area.appendChild(pane);
+
+            // Bind editor events
+            const ta = document.getElementById(`fg-${tabId}`);
+            const bg = document.getElementById(`bg-${tabId}`);
+            const saveBtn = document.getElementById(`save-btn-${tabId}`);
+            ta.value = content || '';
+
+            const updateEditor = () => {
+                let text = ta.value;
+                const formatted = _lintAndHighlight(text, ext);
+                bg.innerHTML = formatted;
+            };
+
+            ta.addEventListener('input', updateEditor);
+            ta.addEventListener('scroll', () => {
+                bg.scrollTop = ta.scrollTop;
+                bg.scrollLeft = ta.scrollLeft;
+            });
+            ta.addEventListener('keydown', (e) => {
+                if (e.ctrlKey && e.key === 's') {
+                    e.preventDefault();
+                    saveCode(fullPath, ta.value, saveBtn);
+                }
+                if (e.key === 'Tab') {
+                    e.preventDefault();
+                    document.execCommand('insertText', false, '    ');
+                }
+            });
+
+            saveBtn.onclick = () => saveCode(fullPath, ta.value, saveBtn);
+
+            updateEditor(); // initial render
+
+            // Switch to new tab
+            switchCenterTab(tabId);
+            addLog('SYS', '📄 Opened: ' + filename);
+        }
+
+        async function saveCode(path, content, btn) {
+            const oldTxt = btn.innerText;
+            btn.innerText = 'Saving...';
+            try {
+                const res = await fetch('http://127.0.0.1:5000/api/fs/write', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ path, content })
+                });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    addLog('SYS', '💾 Saved: ' + path.split('\\\\').pop());
+                    btn.innerText = '✅ Saved';
+                    setTimeout(() => btn.innerText = oldTxt, 2000);
+                } else throw new Error(data.error);
+            } catch (e) {
+                addLog('ERR', '❌ Save fail: ' + e.message);
+                btn.innerText = '❌ Error';
+                setTimeout(() => btn.innerText = oldTxt, 2000);
+            }
+        }
+
+        function _lintAndHighlight(text, ext) {
+            let html = esc(text);
+
+            // Basic Syntax Highlighting rules
+            html = html.replace(/("(?:\\"|[^"])*"|'(?:\\'|[^'])*')/g, '<span class="hl-string">$1</span>'); // strings
+            if (ext === 'js' || ext === 'ts') {
+                html = html.replace(/\b(const|let|var|function|return|if|else|for|while|async|await|class|import|export|from|true|false|null)\b/g, '<span class="hl-keyword">$1</span>');
+                html = html.replace(/(\/\/.*)/g, '<span class="hl-comment">$1</span>');
+            }
+            if (ext === 'json') {
+                html = html.replace(/\b(true|false|null)\b/g, '<span class="hl-keyword">$1</span>');
+                html = html.replace(/\b(-?\d+(?:\.\d+)?(?:e[+-]?\d+)?)\b/g, '<span class="hl-number">$1</span>');
+            }
+
+            // Basic Linting & Squiggly lines
+            if (ext === 'json') {
+                try {
+                    if (text.trim() !== '') JSON.parse(text);
+                } catch (e) {
+                    // Try to extract the error position roughly, or just underline the start
+                    const match = e.message.match(/position (\\d+)/);
+                    if (match) {
+                        const pos = parseInt(match[1]);
+                        const before = esc(text.substring(0, Math.max(0, pos - 10)));
+                        const errorWord = esc(text.substring(Math.max(0, pos - 10), pos + 10) || '_ERR_');
+                        const after = esc(text.substring(pos + 10));
+                        html = before + '<span class="sq-err" title="' + esc(e.message) + '">' + errorWord + '</span>' + after;
+                    } else {
+                        html = `<span class="sq-err" title="JSON Parse Error: ${esc(e.message)}">${html}</span>`;
+                    }
+                }
+            } else if (ext === 'js' || ext === 'html') {
+                // Brackets tracking for JS/HTML
+                const stack = [];
+                let bracesErr = false;
+                for (let i = 0; i < text.length; i++) {
+                    const c = text[i];
+                    if (c === '{' || c === '[' || c === '(') stack.push(c);
+                    else if (c === '}' || c === ']' || c === ')') {
+                        const last = stack.pop();
+                        if ((c === '}' && last !== '{') || (c === ']' && last !== '[') || (c === ')' && last !== '(')) {
+                            bracesErr = true;
+                            // wrap the rest of the text from here in red squiggle
+                            const start = esc(text.substring(0, i));
+                            const end = esc(text.substring(i));
+                            if (html === esc(text)) html = start + '<span class="sq-err" title="Unmatched bracket/brace">' + end.substring(0, 5) + '</span>' + esc(text.substring(i + 5));
+                            break;
+                        }
+                    }
+                }
+            }
+
+            return html + '<br/>'; // ensure empty last line still scrolls
+        }
+
+        function closeCenterTab(tabId) {
+            // Guard: can't close permanent tabs
+            const tabData = _centerTabs.find(t => t.id === tabId);
+            if (!tabData || tabData.permanent) return;
+
+            // Remove from state
+            const idx = _centerTabs.findIndex(t => t.id === tabId);
+            if (idx > -1) _centerTabs.splice(idx, 1);
+
+            // Remove DOM elements
+            const tab = document.querySelector(`.center-tab[data-tab="${tabId}"]`);
+            if (tab) tab.remove();
+            const pane = document.getElementById('pane-' + tabId);
+            if (pane) pane.remove();
+
+            // Switch to previous tab or Mission Control
+            if (_activeTab === tabId) {
+                const prev = _centerTabs[_centerTabs.length - 1];
+                switchCenterTab(prev ? prev.id : 'mission-control');
+            }
+        }
+
+        function updateTabStatus(tabId, status) {
+            const tab = document.querySelector(`.center-tab[data-tab="${tabId}"]`);
+            if (!tab) return;
+            tab.classList.remove('ai-writing');
+            if (status === 'writing') tab.classList.add('ai-writing');
+        }
+
+        function _renderCode(content) {
+            const lines = (content || '').split('\n');
+            return lines.map((line, i) => {
+                const num = `<span class="line-numbers">${i + 1}</span>`;
+                return num + esc(line);
+            }).join('\n');
+        }
+
+        // Tab bar horizontal scroll with mouse wheel
+        (function () {
+            setTimeout(() => {
+                const tabBar = document.getElementById('center-tabs');
+                if (tabBar) tabBar.addEventListener('wheel', (e) => { if (e.deltaY !== 0) { e.preventDefault(); tabBar.scrollLeft += e.deltaY; } }, { passive: false });
+            }, 500);
+        })();
+
+        // Keyboard shortcuts: Ctrl+W close tab, Ctrl+Tab next tab
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'w') {
+                e.preventDefault();
+                if (_activeTab !== 'mission-control') closeCenterTab(_activeTab);
+            }
+            if (e.ctrlKey && e.key === 'Tab') {
+                e.preventDefault();
+                const idx = _centerTabs.findIndex(t => t.id === _activeTab);
+                const next = _centerTabs[(idx + 1) % _centerTabs.length];
+                if (next) switchCenterTab(next.id);
+            }
+        });
+
+        // ═══ BODY STATUS ═══
+        const BP = [{ i: '👁️', n: 'Vision' }, { i: '👂', n: 'Ears' }, { i: '👄', n: 'TTS' }, { i: '🤲', n: 'Hands' }, { i: '🦶', n: 'Crawler' }, { i: '🧬', n: 'Evolve' }, { i: '🛡️', n: 'Shield' }, { i: '🫀', n: 'Daemon' }, { i: '🐝', n: 'Swarm' }, { i: '🔌', n: 'MCP' }, { i: '🎨', n: 'Create' }, { i: '🎵', n: 'Audio' }];
+        function renderBodyStatus() { const c = document.getElementById('body-status'); c.innerHTML = ''; BP.forEach(p => { const d = document.createElement('div'); d.className = 'bp'; d.innerHTML = `${p.i} <span>${p.n}</span> <span class="bd bd-on"></span>`; c.appendChild(d) }) }
+
+        // ═══ CHAT EVENT BINDINGS ═══
+        const chatIn = document.getElementById('chat-input');
+        const btnSend = document.getElementById('btn-send');
+        chatIn.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                if (window.sendMessage) window.sendMessage();
+            }
+        });
+        chatIn.addEventListener('input', () => {
+            const hist = document.getElementById('chat-history');
+            if (chatIn.value.trim() !== '') {
+                hideEmptyState();
+            } else if (!hist || hist.childElementCount === 0) {
+                showEmptyState();
+            }
+        });
+        btnSend.addEventListener('click', () => {
+            if (window.sendMessage) window.sendMessage();
+        });
+
+        // ═══ LAYOUT BOUNDS TRACKER ═══
+        function reportCenterBounds() {
+            const el = document.getElementById('center-content');
+            if (el && window.floworkDesktop && window.floworkDesktop.updateBounds) {
+                const rect = el.getBoundingClientRect();
+                window.floworkDesktop.updateBounds({ x: rect.left, y: rect.top, width: rect.width, height: rect.height });
+            }
+        }
+        window.addEventListener('resize', reportCenterBounds);
+        setInterval(reportCenterBounds, 500);
+
+        // ═══ CHAT ═══
+        // Handled by FLOWORKOS_brain_loader.js & agent_engine.js now.
+
+        function acm(type, text) { if (typeof hideEmptyState === 'function') hideEmptyState(); const d = document.createElement('div'); d.className = 'cm cm-' + (type === 'user' ? 'u' : type === 'ai' ? 'agent' : 'system'); d.innerHTML = esc(text); const c = document.getElementById('chat-history'); if (c) { c.appendChild(d); c.scrollTop = c.scrollHeight; } }
+
+        function renderMarkdown(str) {
+            if (!str) return '';
+            let html = esc(str);
+            // very basic markdown for bold, code blocks
+            html = html.replace(/\\*\\*(.*?)\\*\\*/g, '<strong>$1</strong>');
+            html = html.replace(/```([\\s\\S]*?)```/g, '<pre style="background:rgba(0,0,0,0.5);padding:8px;border-radius:4px;margin:5px 0;"><code>$1</code></pre>');
+            html = html.replace(/`([^`]+)`/g, '<code style="background:rgba(255,255,255,0.1);padding:2px 4px;border-radius:3px;">$1</code>');
+            html = html.replace(/\\n/g, '<br>');
+            return html;
+        }
+
+        // ═══ LOGS ═══
+        const logC = document.getElementById('log-container'); const ML = 200; let logN = 0;
+        function addLog(lv, msg) { const ts = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }); const cl = { SYS: 'l-sys', AI: 'l-ai', NET: 'l-net', AGT: 'l-agt', ERR: 'l-err', WARN: 'l-warn', INFO: 'l-sys' }[lv] || 'l-sys'; const e = document.createElement('div'); e.className = 'le'; e.innerHTML = `<span class="l-ts">[${ts}]</span> <span class="${cl}">[${lv}]</span> ${esc(msg)}`; logC.appendChild(e); logN++; if (logN > ML) { logC.removeChild(logC.firstChild); logN-- } logC.scrollTop = logC.scrollHeight }
+        function clearLogs() { logC.innerHTML = ''; logN = 0; addLog('SYS', '🧹 Cleared') }
+        function esc(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML }
+
+        function navigateTo(target) { addLog('SYS', '→ ' + target); const FD = window.floworkDesktop; if (!FD) return; if (FD.navigateTo) FD.navigateTo(target) }
+
+        // ═══ PANEL TOGGLE ═══
+        function togglePanel(panel) {
+            const map = {
+                files: { el: document.querySelector('.p-left'), btn: document.getElementById('tog-files') },
+                log: { el: document.querySelector('.lp'), btn: document.getElementById('tog-log') },
+                chat: { el: document.querySelector('.p-right'), btn: document.getElementById('tog-chat') }
+            };
+            const target = map[panel];
+            if (!target || !target.el) return;
+            target.el.classList.toggle('hidden');
+            target.btn.classList.toggle('active', !target.el.classList.contains('hidden'));
+            addLog('SYS', (target.el.classList.contains('hidden') ? '⊟ Hidden: ' : '⊞ Shown: ') + panel);
+        }
+
+        // Keyboard shortcuts for panel toggles
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'b') { e.preventDefault(); togglePanel('files'); }
+            if (e.ctrlKey && e.key === 'j') { e.preventDefault(); togglePanel('log'); }
+            if (e.ctrlKey && e.key === '/') { e.preventDefault(); togglePanel('chat'); }
+        });
+
+        // ═══════════════════════════════════════════════════════════════
+        // PHASE 3: CHAT SYSTEM — History, New Chat, Personalization
+        // ═══════════════════════════════════════════════════════════════
+
+        // ─── Empty state management ─────────────────────────────────
+        function showEmptyState() {
+            const es = document.getElementById('chat-empty-state');
+            if (es) es.style.display = 'flex';
+        }
+        function hideEmptyState() {
+            const es = document.getElementById('chat-empty-state');
+            if (es) es.style.display = 'none';
+        }
+
+        // ─── Chat Mode Cards ────────────────────────────────────────
+        function setChatMode(mode) {
+            hideEmptyState();
+            const modeMap = {
+                'code': { msg: '💻 Code Mode activated — I will help you write, debug, and refactor code.', color: '#38bdf8' },
+                'research': { msg: '🔍 Research Mode activated — I will help you analyze, search, and summarize.', color: '#8b5cf6' },
+                'design': { msg: '🎨 Design Mode activated — I will help you design UI, layouts, and visuals.', color: '#f472b6' },
+                'auto': { msg: '🤖 Auto Mode activated — I will decide the best approach for each task.', color: '#06d6a0' }
+            };
+            const m = modeMap[mode] || modeMap['auto'];
+            acm('system', m.msg);
+            // Store mode for agent engine context
+            localStorage.setItem('flowork_ai_mode', mode);
+            addLog('AI', '⚡ Mode: ' + mode.toUpperCase());
+        }
+
+        // ─── New Chat ───────────────────────────────────────────────
+        document.getElementById('btn-new-chat').addEventListener('click', () => {
+            // Clear chat area
+            const hist = document.getElementById('chat-history');
+            if (hist) hist.innerHTML = '';
+            // Clear agent engine state if available
+            if (window.clearChatHistory) window.clearChatHistory();
+            // Show empty state again
+            showEmptyState();
+            addLog('SYS', '✨ New chat session started');
+        });
+
+        // ─── Chat History Drawer ────────────────────────────────────
+        document.getElementById('btn-chat-history').addEventListener('click', () => {
+            openChatHistoryDrawer();
+        });
+
+        async function openChatHistoryDrawer() {
+            const drawer = document.getElementById('chat-history-drawer');
+            drawer.style.display = 'block';
+            await loadChatHistoryList();
+        }
+
+        function closeChatHistoryDrawer() {
+            document.getElementById('chat-history-drawer').style.display = 'none';
+        }
+
+        async function loadChatHistoryList() {
+            const listEl = document.getElementById('chat-history-list');
+            listEl.innerHTML = '<div style="color:var(--text-dim);text-align:center;padding:20px;font-size:10px;">⏳ Loading...</div>';
+
+            try {
+                const res = await fetch('http://127.0.0.1:5000/api/fs/list?path=' + encodeURIComponent('hystory-chat'));
+                const data = await res.json();
+                if (data.status !== 'success' || !data.files || data.files.length === 0) {
+                    listEl.innerHTML = '<div style="color:var(--text-dim);text-align:center;padding:40px 10px;font-size:10px;font-family:var(--font-mono);">No saved sessions yet</div>';
+                    return;
+                }
+
+                const sessions = data.files.filter(f => !f.is_dir && f.name.endsWith('.json')).reverse();
+                listEl.innerHTML = '';
+
+                for (const file of sessions) {
+                    try {
+                        const sRes = await fetch('http://127.0.0.1:5000/api/fs/read?path=' + encodeURIComponent(file.path));
+                        const sText = await sRes.text();
+                        const session = JSON.parse(sText);
+
+                        const card = document.createElement('div');
+                        card.style.cssText = 'padding:10px 12px;background:rgba(59,130,246,0.04);border:1px solid var(--glass-border);border-radius:8px;margin-bottom:6px;cursor:pointer;transition:all .2s;';
+                        card.onmouseenter = () => { card.style.borderColor = 'rgba(59,130,246,0.4)'; card.style.background = 'rgba(59,130,246,0.08)'; };
+                        card.onmouseleave = () => { card.style.borderColor = 'var(--glass-border)'; card.style.background = 'rgba(59,130,246,0.04)'; };
+
+                        const label = session.label || session.id || file.name;
+                        const msgCount = session.userMessageCount || (session.chatHistory ? session.chatHistory.filter(m => m.role === 'user').length : 0);
+                        const date = session.savedAt ? new Date(session.savedAt).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+
+                        card.innerHTML = `
+                            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                                <div style="flex:1;min-width:0;">
+                                    <div style="font-size:11px;font-weight:600;color:var(--accent-6);font-family:var(--font-mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${esc(label)}">${esc(label)}</div>
+                                    <div style="font-size:9px;color:var(--text-dim);margin-top:3px;font-family:var(--font-mono);">${date} · ${msgCount} msgs</div>
+                                </div>
+                                <div style="display:flex;gap:4px;flex-shrink:0;margin-left:8px;">
+                                    <button class="ch-rename" title="Rename" style="background:transparent;border:none;color:#fbbf24;cursor:pointer;font-size:12px;padding:2px;">✏️</button>
+                                    <button class="ch-delete" title="Delete" style="background:transparent;border:none;color:#f87171;cursor:pointer;font-size:12px;padding:2px;">🗑</button>
+                                </div>
+                            </div>
+                        `;
+
+                        // Click to load session
+                        card.addEventListener('click', (e) => {
+                            if (e.target.closest('.ch-rename') || e.target.closest('.ch-delete')) return;
+                            loadChatSession(session);
+                            closeChatHistoryDrawer();
+                        });
+
+                        // Rename
+                        card.querySelector('.ch-rename').addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            renameChatSession(file.path, session, card);
+                        });
+
+                        // Delete
+                        card.querySelector('.ch-delete').addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            deleteChatSession(file.path, card);
+                        });
+
+                        listEl.appendChild(card);
+                    } catch (e) {
+                        // Skip corrupted session files
+                    }
+                }
+            } catch (e) {
+                listEl.innerHTML = '<div style="color:#f87171;text-align:center;padding:20px;font-size:10px;">⚠ Cannot load history</div>';
+            }
+        }
+
+        function loadChatSession(session) {
+            const hist = document.getElementById('chat-history');
+            if (!hist) return;
+            hist.innerHTML = '';
+            hideEmptyState();
+
+            if (session.chatHistory && session.chatHistory.length > 0) {
+                session.chatHistory.forEach(msg => {
+                    if (msg.role === 'user') acm('user', msg.content || '');
+                    else if (msg.role === 'agent') acm('ai', msg.content || '');
+                    else if (msg.role === 'system') acm('system', msg.content || '');
+                });
+            }
+
+            // Restore to agent engine if available
+            if (window.loadSessionToEngine) window.loadSessionToEngine(session);
+            addLog('SYS', '📂 Loaded session: ' + (session.label || session.id));
+        }
+
+        async function renameChatSession(filePath, session, cardEl) {
+            const newName = prompt('Rename session:', session.label || '');
+            if (!newName || newName === session.label) return;
+            try {
+                session.label = newName;
+                await fetch('http://127.0.0.1:5000/api/fs/write', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ path: filePath, content: JSON.stringify(session, null, 2) })
+                });
+                const labelEl = cardEl.querySelector('[title]');
+                if (labelEl) { labelEl.textContent = newName; labelEl.title = newName; }
+                addLog('SYS', '✏️ Renamed session to: ' + newName);
+            } catch (e) {
+                addLog('ERR', 'Rename failed: ' + e.message);
+            }
+        }
+
+        async function deleteChatSession(filePath, cardEl) {
+            if (!confirm('Delete this chat session?')) return;
+            try {
+                await fetch('http://127.0.0.1:5000/api/fs/delete?path=' + encodeURIComponent(filePath), { method: 'DELETE' });
+                cardEl.remove();
+                addLog('SYS', '🗑 Deleted session');
+            } catch (e) {
+                addLog('ERR', 'Delete failed: ' + e.message);
+            }
+        }
+
+        // ─── AI Personalization ─────────────────────────────────────
+        document.getElementById('btn-ai-persona').addEventListener('click', () => {
+            openPersonaModal();
+        });
+
+        function openPersonaModal() {
+            const modal = document.getElementById('ai-persona-modal');
+            modal.style.display = 'flex';
+            // Load saved persona
+            const persona = JSON.parse(localStorage.getItem('flowork_ai_persona') || '{}');
+            document.getElementById('persona-name').value = persona.name || '';
+            document.getElementById('persona-lang').value = persona.language || 'auto';
+            document.getElementById('persona-style').value = persona.style || 'concise';
+            document.getElementById('persona-prompt').value = persona.customPrompt || '';
+        }
+
+        function closePersonaModal() {
+            document.getElementById('ai-persona-modal').style.display = 'none';
+        }
+
+        function savePersona() {
+            const persona = {
+                name: document.getElementById('persona-name').value.trim(),
+                language: document.getElementById('persona-lang').value,
+                style: document.getElementById('persona-style').value,
+                customPrompt: document.getElementById('persona-prompt').value.trim()
+            };
+            localStorage.setItem('flowork_ai_persona', JSON.stringify(persona));
+            closePersonaModal();
+            addLog('SYS', '💾 AI Personalization saved');
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // PHASE 4: FILE MANAGER HARDENING
+        // ═══════════════════════════════════════════════════════════════
+
+        // Unsupported file type handler
+        const SUPPORTED_TEXT_EXTS = ['txt', 'json', 'csv', 'xml', 'log', 'md', 'py', 'js', 'ts', 'go', 'rb', 'html', 'css', 'yaml', 'yml', 'toml', 'ini', 'cfg', 'conf', 'sh', 'bat', 'ps1', 'c', 'cpp', 'h', 'hpp', 'java', 'rs', 'swift', 'kt', 'lua', 'sql', 'env', 'gitignore', 'dockerfile', 'mod', 'sum', 'lock'];
+        const SUPPORTED_IMAGE_EXTS = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'ico', 'bmp'];
+        const SUPPORTED_VIDEO_EXTS = ['mp4', 'webm', 'avi', 'mkv', 'mov'];
+        const SUPPORTED_AUDIO_EXTS = ['mp3', 'wav', 'ogg', 'flac'];
+
+        function isFileSupported(filename) {
+            const ext = (filename || '').split('.').pop().toLowerCase();
+            return SUPPORTED_TEXT_EXTS.includes(ext) || SUPPORTED_IMAGE_EXTS.includes(ext) ||
+                SUPPORTED_VIDEO_EXTS.includes(ext) || SUPPORTED_AUDIO_EXTS.includes(ext);
+        }
+
+        function openUnsupportedFileTab(filename, path) {
+            const tabId = 'unsup-' + filename.replace(/[^a-zA-Z0-9_.-]/g, '_');
+            const existing = document.querySelector(`.center-tab[data-tab="${tabId}"]`);
+            if (existing) { switchCenterTab(tabId); return; }
+
+            _centerTabs.push({ id: tabId, label: filename, permanent: false });
+
+            const tabBar = document.getElementById('center-tabs');
+            const tab = document.createElement('div');
+            tab.className = 'center-tab';
+            tab.dataset.tab = tabId;
+            tab.onclick = () => switchCenterTab(tabId);
+            tab.onmousedown = (e) => { if (e.button === 1) { e.preventDefault(); closeCenterTab(tabId); } };
+            tab.innerHTML = `<span class="center-tab-icon">⚠</span>${esc(filename)}<button class="tab-close" onclick="event.stopPropagation();closeCenterTab('${tabId}')" title="Close">×</button>`;
+            tabBar.appendChild(tab);
+
+            const content_area = document.getElementById('center-content');
+            const pane = document.createElement('div');
+            pane.className = 'tab-pane tab-pane-code';
+            pane.id = 'pane-' + tabId;
+            pane.style.cssText = 'display:none;align-items:center;justify-content:center;background:#0e1428;';
+            const cleanPath = (path || '').replace(/\\\\/g, '\\').replace(/\\/g, '/');
+            pane.innerHTML = `
+                <div style="display:flex;flex-direction:column;align-items:center;gap:18px;padding:40px;text-align:center;">
+                    <div style="font-size:48px;filter:drop-shadow(0 4px 15px rgba(139,92,246,0.4));">📄</div>
+                    <div style="font-family:var(--font-display);font-size:14px;font-weight:700;color:var(--accent-6);letter-spacing:1px;">${esc(filename)}</div>
+                    <div style="color:var(--text-dim);font-size:11px;font-family:var(--font-mono);line-height:1.7;max-width:320px;">
+                        The file is not displayed in the editor because it is either binary<br>or uses an unsupported text encoding.
+                    </div>
+                    <div style="display:flex;gap:10px;margin-top:8px;">
+                        <button onclick="navigator.clipboard.writeText('${cleanPath}');addLog('SYS','📋 Copied path')" style="padding:8px 16px;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);border-radius:8px;color:#38bdf8;font-size:10px;cursor:pointer;font-family:var(--font-mono);font-weight:600;">📋 Copy Path</button>
+                    </div>
+                </div>
+            `;
+            content_area.appendChild(pane);
+            switchCenterTab(tabId);
+            addLog('SYS', '⚠ File not supported: ' + filename);
+        }
+
+        // Override dashFMOpenFile to handle unsupported files
+        const _origOpenFile = dashFMOpenFile;
+        dashFMOpenFile = async function (path, name) {
+            const cleanPath = path.replace(/\\\\/g, '\\');
+            if (!isFileSupported(name)) {
+                openUnsupportedFileTab(name, cleanPath);
+                return;
+            }
+            try {
+                await _origOpenFile(path, name);
+            } catch (e) {
+                addLog('ERR', '⚠ Failed to open: ' + name + ' — ' + (e.message || 'Unknown error'));
+                openUnsupportedFileTab(name, cleanPath);
+            }
+        };
+
+        // ═══════════════════════════════════════════════════════════════
+        // PHASE 5: QUICK ACCESS + AI TAB INTEGRATION
+        // ═══════════════════════════════════════════════════════════════
+
+        // Listen for dashboard action events (Quick Access buttons)
+        if (window.floworkDesktop && window.floworkDesktop.onDashboardAction) {
+            window.floworkDesktop.onDashboardAction((action) => {
+                addLog('SYS', '→ Dashboard action: ' + action);
+                const actionMap = {
+                    'farm': 'botfarm',
+                    'training': 'aitrain',
+                    'browser': 'browser',
+                    'store': 'flowork-store',
+                    'flow': 'flowork-flow',
+                    'tutorial': 'tutorial'
+                };
+                const tabId = actionMap[action] || action;
+                if (window.switchToTab) {
+                    window.switchToTab(tabId);
+                } else if (window.openWebviewTab) {
+                    window.openWebviewTab(tabId, tabId);
+                }
+            });
+        }
+
+        // Listen for open-tab-request from AI (header tabs)
+        if (window.floworkDesktop && window.floworkDesktop.onOpenTabRequest) {
+            window.floworkDesktop.onOpenTabRequest((tabId, tabName, tabUrl) => {
+                addLog('SYS', '→ AI tab request: ' + tabName);
+                if (window.openHeaderTab) {
+                    window.openHeaderTab(tabId, tabName, tabUrl);
+                } else if (window.openWebviewTab) {
+                    window.openWebviewTab(tabId, tabName, tabUrl);
+                }
+            });
+        }
+
+        // Expose Auto IDE mode for AI Agent
+        window.showIDEMode = function () {
+            if (typeof switchCenterTab === 'function') {
+                switchCenterTab('mission-control', 'Dashboard');
+            }
+            // Ensure sidebar also switches to dashboard tab
+            if (window.switchSidebarTab) {
+                window.switchSidebarTab('dashboard');
+            }
+        };
+
+        // Expose code opening for AI Agent to integrate with the new File Manager
+        window.openFileContent = function (filename, content) {
+            if (typeof window.dashFMOpenFile === 'function') {
+                const name = filename.split(/[\\/]/).pop();
+                window.dashFMOpenFile(filename, name);
+            }
+        };
+
+        window.renderIDEFiles = function () {
+            if (typeof window.refreshDashFM === 'function') {
+                window.refreshDashFM();
+            }
+        };
+
+        // Listen for tab actually created by main process (from WS open_ai_tab)
+        if (window.floworkDesktop && window.floworkDesktop.onAppTabOpened) {
+            window.floworkDesktop.onAppTabOpened((tabId, tabName) => {
+                if (!window.HEADER_STATE || !window.HEADER_STATE.tabs[tabId]) {
+                    addLog('SYS', '→ Native Tab Opened: ' + tabId);
+                    if (window.openWebviewTab) {
+                        window.openWebviewTab(tabId, tabName, 'about:blank');
+                    } else if (window.openHeaderTab) {
+                        window.openHeaderTab(tabId, tabName, 'about:blank');
+                    }
+                }
+            });
+        }
+
+        // Listen for tab closed from main process (e.g. from WS close_ai_tab)
+        if (window.floworkDesktop && window.floworkDesktop.onAppTabClosed) {
+            window.floworkDesktop.onAppTabClosed((tabId) => {
+                if (window.HEADER_STATE && window.HEADER_STATE.tabs[tabId]) {
+                    addLog('SYS', '→ Native Tab Closed: ' + tabId);
+                    // Just remove from DOM state without triggering full IPC cycle again
+                    const tab = window.HEADER_STATE.tabs[tabId];
+                    if (tab && tab.tabEl && tab.tabEl.parentNode) {
+                        tab.tabEl.remove();
+                    }
+                    delete window.HEADER_STATE.tabs[tabId];
+                    window.HEADER_STATE.tabOrder = window.HEADER_STATE.tabOrder.filter(id => id !== tabId);
+                    if (window.HEADER_STATE.activeTabId === tabId) {
+                        window.HEADER_STATE.activeTabId = null;
+                        if (window.switchSidebarTab) {
+                            window.switchSidebarTab('dashboard');
+                        }
+                    }
+                }
+            });
+        }
+
+        // ═══ INIT ═══
+        (function () {
+            addLog('SYS', '✓ Flowork OS Mission Control v3');
+            addLog('SYS', '✓ File Manager + Tab System active');
+            addLog('SYS', '✓ Chat History + Personalization ready');
+            renderBodyStatus(); uc(); setInterval(uc, 1000); requestAnimationFrame(uf);
+            const FD = window.floworkDesktop;
+            if (FD && FD.getSystemMetrics) { setTimeout(() => { updateMetrics(); setInterval(updateMetrics, 2500) }, 500); addLog('SYS', '✓ Metrics (2.5s)') }
+            else addLog('WARN', 'No IPC — metrics disabled');
+
+            // Populate Agent Engine hidden configs from settings
+            const cfg = JSON.parse(localStorage.getItem('flowork_settings') || '{}');
+            document.getElementById('select-provider').value = cfg.FLOWORK_AI_PROVIDER || 'gemini';
+            document.getElementById('input-api-key').value = cfg.FLOWORK_AI_KEY || '';
+
+            addLog('AI', '⏳ Agent Engine Ready');
+
+            if (FD && FD.onEngineLog) { FD.onEngineLog(d => { addLog(d.type === 'error' ? 'ERR' : d.type === 'warn' ? 'WARN' : 'SYS', d.text || '') }); addLog('SYS', '✓ Engine log bridge') }
+            // Load File Manager
+            setTimeout(() => refreshDashFM(), 800);
+            addLog('SYS', '✓ File Manager loaded');
+
+            // Show empty chat state on init
+            showEmptyState();
+
+            // Restore chat mode card hover effects
+            document.querySelectorAll('.chat-mode-card').forEach(card => {
+                card.addEventListener('mouseenter', () => { card.style.transform = 'translateY(-2px) scale(1.05)'; card.style.boxShadow = '0 4px 15px rgba(0,0,0,0.3)'; });
+                card.addEventListener('mouseleave', () => { card.style.transform = 'none'; card.style.boxShadow = 'none'; });
+            });
+        })();
+    </script>
+</body>
+<script src="./renderer.js"></script>
+<script src="./brain/core_ui.js"></script>
+<script src="./brain/bot_manager.js"></script>
+<script src="./brain/grid_profiles.js"></script>
+<script src="./brain/farm_tutorial.js"></script>
+<script src="./brain/tab_manager.js"></script>
+<script src="./brain/nav_webview.js"></script>
+<script src="./connector/FLOWORKOS_brain_loader.js"></script>
+<script src="./connector/FLOWORKOS_connector.js"></script>
+
+</html>

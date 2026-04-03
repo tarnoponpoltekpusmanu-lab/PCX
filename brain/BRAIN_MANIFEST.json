@@ -1,0 +1,335 @@
+{
+  "_comment": "BRAIN MANIFEST — AI reads this to know its own capabilities. Even after brain/ is compiled to bytecode, this file tells the AI exactly what it can do.",
+  "version": "2.0.0",
+  "identity": {
+    "name": "Flowork OS Mother AI",
+    "codename": "FLOWORKOS",
+    "type": "Autonomous AI Agent Engine",
+    "description": "Local-first AI operating system that can build apps, automate browsers, control multi-agent teams, and evolve by creating new tools."
+  },
+  "architecture": {
+    "runtime": "Electron (Node.js + Chromium)",
+    "engine_root": "C:\\flowork\\ENGINE",
+    "brain_dir": "brain/",
+    "tools_dir": "tools/",
+    "config": ".env",
+    "protection": "brain/ is READ-ONLY for AI. AI extends via tools/ directory."
+  },
+  "core_modules": {
+    "agent_engine": {
+      "file": "agent_engine.js",
+      "description": "Main execution loop — handles AI tick, tool dispatch, streaming, action parsing",
+      "key_functions": [
+        "agentTick",
+        "sendMessage",
+        "executeAction"
+      ]
+    },
+    "agent_llm": {
+      "file": "agent_llm.js",
+      "description": "LLM API clients — calls Gemini, OpenAI, Claude, Grok, DeepSeek, Groq, Mistral, Together, Fireworks, Cohere, Ollama",
+      "key_functions": [
+        "callGemini",
+        "callOpenAI",
+        "callClaude",
+        "callGrok",
+        "callDeepSeek",
+        "callGroq",
+        "callMistral",
+        "callTogether",
+        "callFireworks",
+        "callCohere",
+        "callOllama"
+      ]
+    },
+    "agent_memory": {
+      "file": "agent_memory.js",
+      "description": "Long-term memory — structured types, micro-compaction, FLOWORK.md hierarchy, aging, semantic search",
+      "key_functions": [
+        "remember",
+        "recall",
+        "forget",
+        "searchMemory"
+      ]
+    },
+    "agent_session_memory": {
+      "file": "agent_session_memory.js",
+      "description": "Session persistence — auto-save, prompt suggestions, AutoDream consolidation, MagicDocs KB",
+      "key_functions": [
+        "createSession",
+        "saveSession",
+        "loadSession",
+        "dreamConsolidate"
+      ]
+    },
+    "agent_mode_router": {
+      "file": "agent_mode_router.js",
+      "description": "Mode switching — App Builder, Node Builder, Browser AI, AI Assistant, Plan Mode",
+      "modes": [
+        "app_builder",
+        "node_builder",
+        "browser_ai",
+        "ai_assistant",
+        "plan_mode"
+      ]
+    },
+    "agent_commands": {
+      "file": "agent_commands.js",
+      "description": "Slash commands — 21 commands for user shortcuts",
+      "count": 21
+    },
+    "agent_voice": {
+      "file": "agent_voice.js",
+      "description": "Voice input — Native + Web Speech API fallback, Ctrl+Shift+V toggle"
+    },
+    "agent_auth": {
+      "file": "agent_auth.js",
+      "description": "OAuth 2.0 PKCE authentication manager"
+    },
+    "agent_thinking": {
+      "file": "agent_thinking.js",
+      "description": "Thinking modes — brief/extended + budget control for reasoning"
+    },
+    "agent_tool_schemas": {
+      "file": "agent_tool_schemas.js",
+      "description": "Tool schema validation — 178 tool schemas + Plan Mode guard"
+    }
+  },
+  "brain_modules": {
+    "brain_adapter": {
+      "file": "brain_flowork_adapter.js",
+      "description": "Main brain adapter — bridges agentTick() to floworkBrain.submitMessage()"
+    },
+    "brain_tool_bridge": {
+      "file": "brain_flowork_tool_bridge.js",
+      "description": "Tool execution bridge — connects 213 tools to real handlers via Go API, WebSocket, browser APIs"
+    },
+    "brain_tool_registry": {
+      "file": "brain_flowork_tool_registry.js",
+      "description": "Tool catalog — 213 tools: 84 go_api, 25 ws_ipc, 8 browser_api, 26 window_global, 70 brain_native"
+    },
+    "brain_llm_adapter": {
+      "file": "brain_flowork_llm_adapter.js",
+      "description": "Unified LLM adapter — normalizes all providers to Claude SDK format"
+    },
+    "brain_config": {
+      "file": "brain_flowork_config.js",
+      "description": "Configuration manager — save/load/auto-sync settings"
+    },
+    "brain_memory_bridge": {
+      "file": "brain_flowork_memory_bridge.js",
+      "description": "Memory bridge — session persistence, auto-memory, AutoDream, prompt suggestion"
+    },
+    "brain_self_heal": {
+      "file": "brain_flowork_self_heal.js",
+      "description": "Self-healing — crash listener + error monitor, auto-recovery"
+    },
+    "brain_evolution": {
+      "file": "brain_flowork_evolution.js",
+      "description": "AI evolution — custom tools, rules, skills that AI creates for itself"
+    },
+    "brain_swarm": {
+      "file": "brain_flowork_swarm.js",
+      "description": "Swarm intelligence — max 6 parallel workers for distributed tasks"
+    },
+    "brain_vision": {
+      "file": "brain_flowork_vision.js",
+      "description": "Vision module — screenshot analysis via Gemini/Ollama vision"
+    },
+    "brain_mcp": {
+      "file": "brain_flowork_mcp.js",
+      "description": "MCP protocol client — filesystem server auto-connect, 14 tools"
+    },
+    "brain_native_dispatcher": {
+      "file": "brain_flowork_native_dispatcher.js",
+      "description": "Native tool dispatcher — routes all brain_native tools to real implementations"
+    },
+    "brain_nas": {
+      "file": "brain_flowork_nas.js",
+      "description": "Neural Architecture Search — auto-optimize AI performance"
+    },
+    "brain_agents": {
+      "file": "brain_flowork_agents.js",
+      "description": "Multi-agent module — spawn specialized sub-agents"
+    },
+    "brain_teams": {
+      "file": "brain_flowork_teams.js",
+      "description": "Team manager — coordinate multiple agents on complex tasks"
+    },
+    "brain_plugins": {
+      "file": "brain_flowork_plugins.js",
+      "description": "Plugin system — load/unload external capabilities"
+    },
+    "brain_lsp": {
+      "file": "brain_flowork_lsp.js",
+      "description": "LSP client — IDE intelligence for code editing"
+    },
+    "brain_plan_mode": {
+      "file": "brain_flowork_plan_mode.js",
+      "description": "Plan mode — structured planning before execution"
+    },
+    "brain_review": {
+      "file": "brain_flowork_review.js",
+      "description": "Self-review — AI reviews its own output before delivery"
+    },
+    "brain_cost_tracker": {
+      "file": "brain_flowork_cost_tracker.js",
+      "description": "Cost tracking — API call counting and budget management"
+    },
+    "brain_permissions": {
+      "file": "brain_flowork_permissions.js",
+      "description": "Permission system — auto/manual approval for dangerous actions"
+    },
+    "brain_features": {
+      "file": "brain_flowork_features.js",
+      "description": "Feature flags — 18 toggleable features"
+    },
+    "brain_tts": {
+      "file": "brain_flowork_tts.js",
+      "description": "TTS output — AI speaks via ElevenLabs, OpenAI TTS, Google Cloud, browser Web Speech API. Auto-speak mode."
+    },
+    "brain_ears": {
+      "file": "brain_flowork_ears.js",
+      "description": "Audio input & event triggers — Whisper transcription, file watchers, webhook listener with auto-injection"
+    },
+    "brain_crawler": {
+      "file": "brain_flowork_crawler.js",
+      "description": "Smart web crawling — readability extraction, site crawling, link following, rate limiting"
+    },
+    "brain_imagegen": {
+      "file": "brain_flowork_imagegen.js",
+      "description": "Image generation — DALL-E 3, Gemini Imagen 3, Flux (Together AI). Auto-save to workspace."
+    },
+    "brain_audiogen": {
+      "file": "brain_flowork_audiogen.js",
+      "description": "Audio generation — ElevenLabs sound effects, OpenAI TTS-HD for speech/music"
+    },
+    "brain_daemon": {
+      "file": "brain_flowork_daemon.js",
+      "description": "Background daemon — scheduled tasks, cron intervals, event bus for inter-module communication"
+    }
+  },
+  "smart_modules": {
+    "FLOWORKOS_model_failover": {
+      "description": "Auto-failover between AI providers when primary fails",
+      "key_function": "runWithModelFailover()"
+    },
+    "FLOWORKOS_loop_detector": {
+      "description": "Detects when AI gets stuck in tool call loops",
+      "key_function": "detectToolCallLoop()"
+    },
+    "FLOWORKOS_compaction": {
+      "description": "Smart context compression — keeps conversation within token limits",
+      "key_function": "compactMessages()"
+    },
+    "FLOWORKOS_usage_tracking": {
+      "description": "Tracks API usage, tokens, costs per session",
+      "key_function": "recordUsage()"
+    },
+    "FLOWORKOS_tool_policy": {
+      "description": "Policy engine — controls which tools AI can use and when",
+      "key_function": "evaluatePolicy()"
+    },
+    "FLOWORKOS_redaction": {
+      "description": "Payload redaction — removes sensitive data before sending to LLM",
+      "key_function": "redact()"
+    },
+    "FLOWORKOS_subagent_manager": {
+      "description": "Sub-agent spawning and lifecycle management",
+      "key_function": "spawnSubagent()"
+    },
+    "FLOWORKOS_session_manager": {
+      "description": "Session persistence — save/restore AI conversation states",
+      "key_function": "createSession()"
+    },
+    "FLOWORKOS_skills_manager": {
+      "description": "Skill system — 5 built-in skills, expandable",
+      "key_function": "listSkills()"
+    },
+    "FLOWORKOS_gateway": {
+      "description": "Multi-channel gateway — web, WhatsApp, Telegram, Discord, Slack, REST",
+      "key_function": "handleInbound()"
+    },
+    "FLOWORKOS_context_guard": {
+      "description": "Context window monitor — auto-compact at 80% capacity",
+      "key_function": "estimateUsage()"
+    },
+    "FLOWORKOS_mcp_client": {
+      "description": "MCP protocol client — connect to external tool servers via SSE",
+      "key_function": "connectSSE()"
+    },
+    "FLOWORKOS_voice_tts": {
+      "description": "Text-to-speech — browser, ElevenLabs, OpenAI, Google providers",
+      "key_function": "speak()"
+    },
+    "FLOWORKOS_media_pipeline": {
+      "description": "Media processing — vision analysis, Whisper transcription, MIME detection",
+      "key_function": "analyzeImage()"
+    },
+    "FLOWORKOS_env_loader": {
+      "description": "Environment config loader — reads .env, auto-wires services",
+      "key_function": "loadEnv()"
+    },
+    "FLOWORKOS_connector": {
+      "description": "Universal Tool Connector — auto-discovers & hot-loads tools in any language",
+      "key_function": "executeTool()"
+    }
+  },
+  "tool_summary": {
+    "total": 213,
+    "categories": {
+      "go_api": 84,
+      "ws_ipc": 25,
+      "browser_api": 8,
+      "window_global": 26,
+      "brain_native": 70
+    },
+    "connector_tools": "dynamic — loaded from tools/ directory at runtime"
+  },
+  "evolution_rules": {
+    "can_create": [
+      "tools/*/",
+      "workspace/*",
+      "apps/*"
+    ],
+    "can_read": [
+      "brain/*",
+      "tools/*",
+      ".env",
+      "everything"
+    ],
+    "cannot_write": [
+      "brain/*",
+      ".env",
+      "ai-builder.html",
+      "index.html"
+    ],
+    "how_to_evolve": {
+      "new_capability": "Create a new folder in tools/ with manifest.json + entry file",
+      "new_thinking": "Store insights in memory/KB via remember()",
+      "better_tools": "Create tools/tool_name_v2/ (new version, don't edit original)",
+      "new_senses": "Create tools/ with vision/media capabilities"
+    }
+  },
+  "supported_providers": [
+    "gemini",
+    "openai",
+    "claude",
+    "grok",
+    "deepseek",
+    "groq",
+    "mistral",
+    "together",
+    "fireworks",
+    "cohere",
+    "ollama"
+  ],
+  "compile_status": {
+    "is_compiled": true,
+    "format": "v8_bytecode",
+    "compiled_at": "2026-04-02T18:15:49.163Z",
+    "total_files": 62,
+    "failed_files": 0,
+    "note": "Brain compiled to V8 bytecode. Source files preserved."
+  }
+}

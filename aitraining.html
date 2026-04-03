@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Flowork OS — AI Training Center</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        :root {
+            --bg: #0a0e1a;
+            --bg2: #0d1117;
+            --border: rgba(0,240,255,0.08);
+            --text: #c8d6e5;
+            --text2: #8a9aaa;
+            --text3: #3a4d6a;
+            --accent: #00f0ff;
+            --pink: #ff0066;
+            --green: #06d6a0;
+            --yellow: #ffd166;
+            --purple: #8b5cf6;
+        }
+        body {
+            font-family: 'Inter','Segoe UI',sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            padding: 15px 24px;
+            border-bottom: 1px solid rgba(6,214,160,0.12);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(6,214,160,0.02);
+            flex-shrink: 0;
+        }
+        .header-left { display:flex; align-items:center; gap:12px; }
+        .header-title {
+            font-weight: 700;
+            font-size: 15px;
+            font-family: 'Orbitron','Inter',sans-serif;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg,#06d6a0,#00f0ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header-badge {
+            font-size: 10px;
+            color: var(--text3);
+            background: rgba(6,214,160,0.08);
+            padding: 3px 10px;
+            border-radius: 20px;
+            border: 1px solid rgba(6,214,160,0.15);
+        }
+        .header-right { display:flex; align-items:center; gap:10px; }
+        .active-dot {
+            width:8px; height:8px; border-radius:50%;
+            background: var(--green);
+            box-shadow: 0 0 8px var(--green);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+        .scroll-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        /* Stat Cards */
+        .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+        .stat-card {
+            background: rgba(0,0,0,0.25);
+            border-radius: 10px;
+            padding: 14px;
+            text-align: center;
+        }
+        .stat-icon { font-size:20px; margin-bottom:4px; }
+        .stat-value { font-size:16px; font-weight:700; font-family:'Orbitron',sans-serif; }
+        .stat-label { font-size:10px; color:var(--text3); margin-top:4px; letter-spacing:1px; }
+        /* Mode Cards */
+        .modes-title { font-size:12px; font-weight:700; color:var(--text2); letter-spacing:2px; text-transform:uppercase; margin-bottom:12px; }
+        .modes-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:12px; }
+        .mode-card {
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            padding: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        .mode-card:hover { transform:translateY(-2px); }
+        .mode-card.active { background:rgba(0,240,255,0.04); }
+        .mode-name { font-size:14px; font-weight:700; margin-bottom:4px; }
+        .mode-desc { font-size:10px; color:var(--text2); line-height:1.5; margin-bottom:10px; }
+        .mode-tags { display:flex; gap:8px; flex-wrap:wrap; }
+        .mode-tag { font-size:9px; padding:2px 8px; background:rgba(255,255,255,0.04); border-radius:4px; color:var(--text2); }
+        .active-badge {
+            position:absolute; top:8px; right:8px;
+            font-size:8px; padding:2px 8px;
+            border-radius:10px; font-weight:700; letter-spacing:1px;
+        }
+        /* Data + Runs Grid */
+        .dual-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+        .panel {
+            background: rgba(0,240,255,0.02);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+        }
+        .panel-header {
+            display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;
+        }
+        .panel-title { font-size:12px; font-weight:700; letter-spacing:1px; }
+        .panel-btn {
+            font-size:10px; padding:4px 12px;
+            border-radius:6px; cursor:pointer; font-weight:700;
+            border:1px solid;
+        }
+        .data-row, .run-row {
+            display:flex; align-items:center; justify-content:space-between;
+            padding:8px 10px; background:rgba(0,0,0,0.15); border-radius:6px;
+            font-size:11px; margin-bottom:6px;
+        }
+        .data-row:last-child, .run-row:last-child { margin-bottom:0; }
+        .row-left { display:flex; align-items:center; gap:8px; }
+        .row-right { display:flex; align-items:center; gap:12px; }
+        .quality-bar { width:40px; height:4px; background:rgba(255,255,255,0.05); border-radius:2px; overflow:hidden; }
+        .quality-fill { height:100%; border-radius:2px; }
+        .status-badge { font-weight:700; text-transform:uppercase; font-size:9px; letter-spacing:1px; }
+        /* Playground */
+        .playground-title { font-size:12px; font-weight:700; color:var(--yellow); letter-spacing:1px; margin-bottom:12px; }
+        .playground-input {
+            flex:1; height:70px;
+            background:rgba(0,0,0,0.3); color:var(--text);
+            border:1px solid var(--border); border-radius:8px;
+            padding:10px; font-family:'JetBrains Mono',monospace;
+            font-size:12px; resize:none; outline:none;
+        }
+        .playground-input:focus { border-color:rgba(0,240,255,0.3); }
+        .playground-btn {
+            padding:10px 20px;
+            background:linear-gradient(135deg,rgba(0,240,255,0.15),rgba(255,0,102,0.08));
+            color:var(--accent); border:1px solid rgba(0,240,255,0.2);
+            border-radius:8px; cursor:pointer; font-weight:700;
+            font-size:12px; white-space:nowrap;
+        }
+        .playground-btn:hover { filter:brightness(1.2); }
+        .playground-output {
+            margin-top:10px; padding:12px;
+            background:rgba(0,0,0,0.2); border:1px solid rgba(0,240,255,0.06);
+            border-radius:8px; font-family:'JetBrains Mono',monospace;
+            font-size:11px; color:var(--text3); min-height:40px; line-height:1.6;
+        }
+        /* Resource Bars */
+        .resource-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+        .resource-card {
+            background:rgba(0,0,0,0.25);
+            border-radius:10px; padding:14px;
+        }
+        .resource-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+        .resource-label { font-size:10px; color:var(--text2); letter-spacing:1px; }
+        .resource-value { font-size:12px; font-weight:700; font-family:'Orbitron',sans-serif; }
+        .resource-track { width:100%; height:6px; background:rgba(255,255,255,0.04); border-radius:3px; overflow:hidden; }
+        .resource-fill { height:100%; border-radius:3px; transition:width 1s ease; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <div class="header-title">🧠 AI TRAINING CENTER</div>
+            <div class="header-badge">v2.0 • 5 Modes</div>
+        </div>
+        <div class="header-right">
+            <div style="font-size:10px;color:var(--green);" id="active-mode-label">Active: 🤖 Main AI</div>
+            <div class="active-dot"></div>
+        </div>
+    </div>
+
+    <div class="scroll-area" id="main-content"></div>
+
+<script>
+(function(){
+    'use strict';
+
+    var activeMode = 'main';
+
+    var MODES = [
+        {id:'app_builder', label:'🔨 App Builder', color:'#06d6a0', desc:'Build, edit, and deploy Flowork apps', stats:{tools:64, accuracy:'94.2%', lastTrained:'2 days ago'}},
+        {id:'browser_automation', label:'🌐 Browser AI', color:'#00f0ff', desc:'Control and automate browser tabs', stats:{tools:38, accuracy:'91.8%', lastTrained:'5 hours ago'}},
+        {id:'node_builder', label:'🧩 Node Builder', color:'#ffd166', desc:'Create and edit workflow nodes', stats:{tools:28, accuracy:'96.1%', lastTrained:'1 day ago'}},
+        {id:'main', label:'🤖 Main AI', color:'#ff0066', desc:'Full-power AI with all capabilities', stats:{tools:'ALL', accuracy:'89.5%', lastTrained:'3 hours ago'}},
+        {id:'plan', label:'📋 Plan Mode', color:'#8b5cf6', desc:'AI shows execution plan before acting', stats:{tools:22, accuracy:'97.3%', lastTrained:'1 day ago'}}
+    ];
+
+    var DATASETS = [
+        {name:'browser_actions_v3.jsonl', records:12480, size:'4.2 MB', status:'ready', quality:98, color:'#06d6a0'},
+        {name:'app_builder_flows.jsonl', records:8340, size:'2.8 MB', status:'ready', quality:95, color:'#06d6a0'},
+        {name:'node_schemas_v2.jsonl', records:3210, size:'1.1 MB', status:'processing', quality:88, color:'#ffd166'},
+        {name:'user_feedback_apr.jsonl', records:1560, size:'0.5 MB', status:'validating', quality:72, color:'#00f0ff'},
+    ];
+
+    var RUNS = [
+        {id:'run-042', mode:'Browser AI', epochs:5, loss:0.0234, status:'completed', date:'2026-04-02'},
+        {id:'run-041', mode:'App Builder', epochs:3, loss:0.0312, status:'completed', date:'2026-04-01'},
+        {id:'run-040', mode:'Main AI', epochs:8, loss:0.0189, status:'completed', date:'2026-03-30'},
+    ];
+
+    function render() {
+        var el = document.getElementById('main-content');
+        el.innerHTML = '';
+
+        // ROW 1: Stats
+        el.innerHTML += '<div class="stats-grid">' +
+            statCard('📊','Total Training Runs','42','#00f0ff') +
+            statCard('🧠','Active Model','flowork-v2.8','#06d6a0') +
+            statCard('📁','Training Data','25,590 records','#ffd166') +
+            statCard('🎯','Avg. Accuracy','93.8%','#ff0066') +
+        '</div>';
+
+        // ROW 2: Mode Selection
+        el.innerHTML += '<div>' +
+            '<div class="modes-title">AI Mode Selection</div>' +
+            '<div class="modes-grid">' + MODES.map(modeCard).join('') + '</div>' +
+        '</div>';
+
+        // ROW 3: Data + Runs
+        el.innerHTML += '<div class="dual-grid">' +
+            '<div class="panel">' +
+                '<div class="panel-header"><div class="panel-title" style="color:#00f0ff">📁 TRAINING DATASETS</div>' +
+                '<button class="panel-btn" style="background:rgba(6,214,160,0.12);color:#06d6a0;border-color:rgba(6,214,160,0.2)" onclick="alert(\'Upload coming soon\')">+ Upload</button></div>' +
+                DATASETS.map(dataRow).join('') +
+            '</div>' +
+            '<div class="panel">' +
+                '<div class="panel-header"><div class="panel-title" style="color:#8b5cf6">🔄 RECENT TRAINING RUNS</div>' +
+                '<button class="panel-btn" style="background:rgba(255,0,102,0.12);color:#ff0066;border-color:rgba(255,0,102,0.2)" onclick="alert(\'New run coming soon\')">▶ New Run</button></div>' +
+                RUNS.map(runRow).join('') +
+            '</div>' +
+        '</div>';
+
+        // ROW 4: Playground
+        el.innerHTML += '<div class="panel">' +
+            '<div class="playground-title">🧪 PLAYGROUND — Test Your Model</div>' +
+            '<div style="display:flex;gap:12px;align-items:flex-start">' +
+                '<textarea class="playground-input" id="pg-input" placeholder="Type a test prompt here..."></textarea>' +
+                '<button class="playground-btn" id="btn-test">▶ Run Test</button>' +
+            '</div>' +
+            '<div class="playground-output" id="pg-output">Output will appear here...</div>' +
+        '</div>';
+
+        // ROW 5: Resources
+        el.innerHTML += '<div class="resource-grid">' +
+            resourceBar('GPU Usage', 34, '#06d6a0') +
+            resourceBar('Memory', 62, '#ffd166') +
+            resourceBar('API Cost (today)', 18, '#00f0ff') +
+        '</div>';
+
+        // Bind mode cards
+        document.querySelectorAll('.mode-card').forEach(function(card) {
+            card.addEventListener('click', function() {
+                activeMode = card.getAttribute('data-mode');
+                var m = MODES.find(function(x){ return x.id === activeMode; });
+                document.getElementById('active-mode-label').textContent = 'Active: ' + (m ? m.label : activeMode);
+                render();
+            });
+        });
+
+        // Bind test button
+        var btnTest = document.getElementById('btn-test');
+        if (btnTest) {
+            btnTest.addEventListener('click', function() {
+                document.getElementById('pg-output').textContent = '[Mock] I would execute the browser_automation tools to navigate to the target URL, capture a screenshot, and extract the relevant DOM elements...';
+            });
+        }
+    }
+
+    function statCard(icon, label, value, color) {
+        return '<div class="stat-card" style="border:1px solid ' + color + '22">' +
+            '<div class="stat-icon">' + icon + '</div>' +
+            '<div class="stat-value" style="color:' + color + '">' + value + '</div>' +
+            '<div class="stat-label">' + label + '</div>' +
+        '</div>';
+    }
+
+    function modeCard(m) {
+        var isActive = activeMode === m.id;
+        var border = isActive ? '2px solid ' + m.color : '1px solid ' + m.color + '22';
+        var bg = isActive ? 'rgba(0,240,255,0.04)' : '';
+        return '<div class="mode-card' + (isActive?' active':'') + '" data-mode="' + m.id + '" style="border:' + border + ';' + (bg?'background:'+bg:'') + '">' +
+            (isActive ? '<div class="active-badge" style="background:' + m.color + '22;color:' + m.color + '">ACTIVE</div>' : '') +
+            '<div class="mode-name" style="color:' + m.color + '">' + m.label + '</div>' +
+            '<div class="mode-desc">' + m.desc + '</div>' +
+            '<div class="mode-tags">' +
+                '<span class="mode-tag">🔧 ' + m.stats.tools + ' tools</span>' +
+                '<span class="mode-tag">🎯 ' + m.stats.accuracy + '</span>' +
+                '<span class="mode-tag">⏱ ' + m.stats.lastTrained + '</span>' +
+            '</div>' +
+        '</div>';
+    }
+
+    function dataRow(d) {
+        return '<div class="data-row">' +
+            '<div class="row-left"><span style="color:var(--text2)">📄</span><span style="color:var(--text);font-weight:600">' + d.name + '</span></div>' +
+            '<div class="row-right">' +
+                '<span style="color:var(--text3)">' + d.records.toLocaleString() + ' rows</span>' +
+                '<span style="color:var(--text3)">' + d.size + '</span>' +
+                '<div class="quality-bar"><div class="quality-fill" style="width:' + d.quality + '%;background:' + d.color + '"></div></div>' +
+                '<span class="status-badge" style="color:' + d.color + '">' + d.status + '</span>' +
+            '</div>' +
+        '</div>';
+    }
+
+    function runRow(r) {
+        return '<div class="run-row">' +
+            '<div class="row-left">' +
+                '<span style="color:#8b5cf6;font-weight:700;font-family:monospace">' + r.id + '</span>' +
+                '<span style="color:var(--text)">' + r.mode + '</span>' +
+            '</div>' +
+            '<div class="row-right">' +
+                '<span style="color:var(--text3)">' + r.epochs + ' epochs</span>' +
+                '<span style="color:#06d6a0;font-family:monospace">loss: ' + r.loss + '</span>' +
+                '<span style="color:var(--text3)">' + r.date + '</span>' +
+                '<span class="status-badge" style="color:#06d6a0">✓ ' + r.status.toUpperCase() + '</span>' +
+            '</div>' +
+        '</div>';
+    }
+
+    function resourceBar(label, pct, color) {
+        return '<div class="resource-card" style="border:1px solid ' + color + '22">' +
+            '<div class="resource-top">' +
+                '<span class="resource-label">' + label + '</span>' +
+                '<span class="resource-value" style="color:' + color + '">' + pct + '%</span>' +
+            '</div>' +
+            '<div class="resource-track"><div class="resource-fill" style="width:' + pct + '%;background:linear-gradient(90deg,' + color + ',' + color + '88)"></div></div>' +
+        '</div>';
+    }
+
+    render();
+})();
+</script>
+</body>
+</html>

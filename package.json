@@ -1,0 +1,68 @@
+{
+  "name": "flowork-desktop-ui",
+  "version": "1.0.0",
+  "description": "Flowork OS Standalone Webview UI",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build:portable": "electron-builder --win portable",
+    "postbuild:portable": "move dist\\gui.exe .\\",
+    "build:brain": "node brain/scripts/build-brain.mjs"
+  },
+  "author": "Flowork OS",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/diff": "^7.0.0",
+    "@types/lodash-es": "^4.17.12",
+    "@types/node": "^22.10.0",
+    "@types/picomatch": "^3.0.0",
+    "@types/proper-lockfile": "^4.1.4",
+    "@types/semver": "^7.5.8",
+    "@types/ws": "^8.5.0",
+    "adm-zip": "^0.5.17",
+    "bytenode": "^1.5.7",
+    "electron": "^28.3.3",
+    "electron-builder": "^24.13.3",
+    "electron-packager": "^17.1.2",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.7.0"
+  },
+  "build": {
+    "appId": "com.floworkos.webview",
+    "productName": "Flowork OS",
+    "asar": true,
+    "asarUnpack": [
+      "FLOWORK_EXTENTION/**/*"
+    ],
+    "extraResources": [
+      "runtimes/**/*"
+    ],
+    "win": {
+      "target": "portable",
+      "icon": "icon.png"
+    },
+    "portable": {
+      "artifactName": "gui.exe"
+    }
+  },
+  "dependencies": {
+    "diff": "^7.0.0",
+    "fuse.js": "^7.0.0",
+    "ignore": "^6.0.0",
+    "jsonc-parser": "^3.3.1",
+    "lodash-es": "^4.17.21",
+    "marked": "^15.0.0",
+    "monaco-editor": "^0.47.0",
+    "node-llama-cpp": "^3.18.1",
+    "picomatch": "^4.0.0",
+    "proper-lockfile": "^4.1.2",
+    "semver": "^7.6.0",
+    "strip-ansi": "^7.1.0",
+    "type-fest": "^4.30.0",
+    "ws": "^8.20.0",
+    "xterm": "^5.3.0",
+    "xterm-addon-fit": "^0.8.0",
+    "yaml": "^2.6.0",
+    "zod": "^3.24.0"
+  }
+}

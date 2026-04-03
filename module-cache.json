@@ -1,0 +1,13 @@
+{
+  "n8n-nodes-base.googleCalendarTool": "C:\\Users\\User\\OneDrive\\Documents\\1.FASE-CODING\\FLOWORK_ENGINE_WEB_VIEW\\node_modules\\n8n-nodes-base\\dist\\nodes\\Google\\Calendar\\GoogleCalendar.node.js",
+  "@n8n/n8n-nodes-langchain.agent": "C:\\Users\\User\\OneDrive\\Documents\\1.FASE-CODING\\FLOWORK_ENGINE_WEB_VIEW\\node_modules\\@n8n\\n8n-nodes-langchain\\dist\\nodes\\agents\\Agent\\Agent.node.js",
+  "n8n-nodes-base.googleSheetsTool": "C:\\Users\\User\\OneDrive\\Documents\\1.FASE-CODING\\FLOWORK_ENGINE_WEB_VIEW\\node_modules\\n8n-nodes-base\\dist\\nodes\\Google\\Sheet\\GoogleSheets.node.js",
+  "n8n-nodes-base.AgileCrm": "C:\\Users\\User\\OneDrive\\Documents\\1.FASE-CODING\\FLOWORK_ENGINE_WEB_VIEW\\node_modules\\n8n-nodes-base\\dist\\nodes\\AgileCrm\\AgileCrm.node.js",
+  "n8n-nodes-base.Autopilot": "C:\\Users\\User\\OneDrive\\Documents\\1.FASE-CODING\\FLOWORK_ENGINE_WEB_VIEW\\node_modules\\n8n-nodes-base\\dist\\nodes\\Autopilot\\Autopilot.node.js",
+  "n8n-nodes-base.Box": "C:\\Users\\User\\OneDrive\\Documents\\1.FASE-CODING\\FLOWORK_ENGINE_WEB_VIEW\\node_modules\\n8n-nodes-base\\dist\\nodes\\Box\\Box.node.js",
+  "n8n-nodes-base.Webhook": "C:\\Users\\User\\OneDrive\\Documents\\1.FASE-CODING\\FLOWORK_ENGINE_WEB_VIEW\\node_modules\\n8n-nodes-base\\dist\\nodes\\Webhook\\Webhook.node.js",
+  "n8n-nodes-base.webhook": "C:\\Users\\User\\OneDrive\\Documents\\1.FASE-CODING\\FLOWORK_ENGINE_WEB_VIEW\\node_modules\\n8n-nodes-base\\dist\\nodes\\Webhook\\Webhook.node.js",
+  "n8n-nodes-base.scheduleTrigger": "C:\\Users\\User\\OneDrive\\Documents\\1.FASE-CODING\\FLOWORK_ENGINE_WEB_VIEW\\node_modules\\n8n-nodes-base\\dist\\nodes\\Schedule\\ScheduleTrigger.node.js",
+  "n8n-nodes-base.rssFeedRead": "C:\\Users\\User\\OneDrive\\Documents\\1.FASE-CODING\\FLOWORK_ENGINE_WEB_VIEW\\node_modules\\n8n-nodes-base\\dist\\nodes\\RssFeedRead\\RssFeedRead.node.js",
+  "n8n-nodes-base.Hubspot": "C:\\Users\\User\\OneDrive\\Documents\\1.FASE-CODING\\FLOWORK_ENGINE_WEB_VIEW\\node_modules\\n8n-nodes-base\\dist\\nodes\\Hubspot\\Hubspot.node.js"
+}

@@ -1,0 +1,72 @@
+{
+  "status": "success",
+  "tool": {
+    "id": "tool-import-cookies-tiktok",
+    "name": "Import Cookies TikTok",
+    "description": "Import Netscape cookie file ke browser tab TikTok untuk bypass login. Membaca file cookie dari workspace/cookies/ lalu inject via import_cookies action.",
+    "category": "browser",
+    "language": "javascript",
+    "tags": [
+      "cookies",
+      "tiktok",
+      "login",
+      "browser",
+      "automation",
+      "bypass"
+    ],
+    "parameters": [
+      {
+        "name": "tabId",
+        "type": "string",
+        "description": "Browser tab ID dari open_browser_tab"
+      },
+      {
+        "name": "cookie_file",
+        "type": "string",
+        "description": "Path ke file cookie di workspace (e.g. cookies/tiktok.txt)"
+      }
+    ],
+    "steps": [
+      {
+        "action": "list_workspace",
+        "folder": "cookies",
+        "description": "Cek file cookie yang tersedia di workspace"
+      },
+      {
+        "action": "read_workspace_file",
+        "path": "cookies/tiktok.txt",
+        "description": "Baca isi file cookie Netscape format"
+      },
+      {
+        "action": "open_browser_tab",
+        "url": "https://www.tiktok.com",
+        "label": "tiktok",
+        "description": "Buka TikTok di browser tab baru"
+      },
+      {
+        "action": "import_cookies",
+        "description": "Import cookies dari file Netscape ke browser tab"
+      },
+      {
+        "action": "navigate_browser",
+        "url": "https://www.tiktok.com/foryou",
+        "description": "Refresh ke For You page untuk verify login"
+      },
+      {
+        "action": "capture_browser",
+        "description": "Screenshot untuk verifikasi login berhasil"
+      }
+    ],
+    "code_snippet": "// Step 1: Cek workspace\nconst files = await list_workspace('cookies');\n// Step 2: Baca cookie file\nconst cookieContent = await read_workspace_file('cookies/tiktok.txt');\n// Step 3: Buka TikTok\nconst tab = await open_browser_tab('https://www.tiktok.com', 'tiktok');\n// Step 4: Import cookies\nawait import_cookies(tab.tabId, cookieContent);\n// Step 5: Navigate and verify\nawait navigate_browser(tab.tabId, 'https://www.tiktok.com/foryou');\nawait capture_browser(tab.tabId);",
+    "usage_example": "{ \"action\": \"tools_get\", \"id\": \"tool-import-cookies-tiktok\" }",
+    "usage_count": 6,
+    "success_rate": 0,
+    "article_body": "# Import Cookies TikTok\n\nImport Netscape cookie file ke browser tab TikTok untuk bypass login. Membaca file cookie dari workspace/cookies/ lalu inject via import_cookies action.\n\n## Overview\n- **Category**: browser\n- **Language**: javascript\n- **Tags**: cookies, tiktok, login, browser, automation, bypass\n\n## Parameters\n- **tabId** (string): Browser tab ID dari open_browser_tab\n- **cookie_file** (string): Path ke file cookie di workspace (e.g. cookies/tiktok.txt)\n\n## Steps\n1. `list_workspace` — Cek file cookie yang tersedia di workspace\n2. `read_workspace_file` — Baca isi file cookie Netscape format\n3. `open_browser_tab` → https://www.tiktok.com — Buka TikTok di browser tab baru\n4. `import_cookies` — Import cookies dari file Netscape ke browser tab\n5. `navigate_browser` → https://www.tiktok.com/foryou — Refresh ke For You page untuk verify login\n6. `capture_browser` — Screenshot untuk verifikasi login berhasil\n\n## Code Reference\n```javascript\n// Step 1: Cek workspace\nconst files = await list_workspace('cookies');\n// Step 2: Baca cookie file\nconst cookieContent = await read_workspace_file('cookies/tiktok.txt');\n// Step 3: Buka TikTok\nconst tab = await open_browser_tab('https://www.tiktok.com', 'tiktok');\n// Step 4: Import cookies\nawait import_cookies(tab.tabId, cookieContent);\n// Step 5: Navigate and verify\nawait navigate_browser(tab.tabId, 'https://www.tiktok.com/foryou');\nawait capture_browser(tab.tabId);\n```\n\n## Usage in Flowork AI\nThis tool can be used by the Flowork AI Engine to automate tasks. The AI searches for existing tools before writing code, saving tokens and improving execution speed.\n\n```json\n{ \"action\": \"tools_get\", \"id\": \"tool-import-cookies-tiktok\" }\n```\n",
+    "changelog": [],
+    "version": 1,
+    "created_at": "2026-04-01T13:26:59.090Z",
+    "updated_at": "2026-04-01T13:26:59.090Z",
+    "meta_title": "Import Cookies TikTok — Flowork AI Tool",
+    "meta_description": "Import Netscape cookie file ke browser tab TikTok untuk bypass login. Membaca file cookie dari workspace/cookies/ lalu inject via import_cookies action."
+  }
+}

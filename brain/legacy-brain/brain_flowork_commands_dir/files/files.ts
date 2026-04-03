@@ -1,0 +1,21 @@
+import { relative } from 'path'
+import type { ToolUseContext } from '../../brain_flowork_tool.js'
+import type { LocalCommandResult } from '../../brain_flowork_types/command.js'
+import { getCwd } from '../../brain_flowork_utils/cwd.js'
+import { cacheKeys } from '../../brain_flowork_utils/fileStateCache.js'
+
+export async function call(
+  _args: string,
+  context: ToolUseContext,
+): Promise<LocalCommandResult> {
+  const files = context.readFileState ? cacheKeys(context.readFileState) : []
+
+  if (files.length === 0) {
+    return { type: 'text' as const, value: 'No files in context' }
+  }
+
+  const fileList = files.map(file => relative(getCwd(), file)).join('\n')
+  return { type: 'text' as const, value: `Files in context:\n${fileList}` }
+}
+
+

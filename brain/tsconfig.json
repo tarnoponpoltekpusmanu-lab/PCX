@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "esModuleInterop": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "declaration": false,
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": false,
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "types": ["node"],
+    "baseUrl": ".",
+    "paths": {
+      "bun:bundle": ["./legacy-brain/brain_flowork_shims/bun-bundle.d.ts"],
+      "src/*": ["./legacy-brain/*"]
+    }
+  },
+  "include": ["legacy-brain/**/*.ts", "legacy-brain/**/*.tsx"],
+  "exclude": ["node_modules", "dist"]
+}

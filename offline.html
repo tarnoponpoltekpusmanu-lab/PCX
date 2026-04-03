@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connection Error - Flowork OS</title>
+    <style>
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #050505;
+            color: #e0e6ed;
+            font-family: 'Consolas', 'Courier New', monospace;
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden;
+        }
+        .error-container {
+            text-align: center;
+            border: 1px solid #232733;
+            background-color: #0c0e12;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            max-width: 500px;
+        }
+        .icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 10px #ff3366);
+        }
+        h1 {
+            color: #ff3366;
+            margin: 0 0 10px 0;
+            font-size: 24px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        p {
+            color: #7b8496;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 30px;
+        }
+        .btn-retry {
+            background-color: transparent;
+            color: #54d7f6;
+            border: 1px solid #54d7f6;
+            padding: 12px 24px;
+            font-size: 14px;
+            font-family: inherit;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .btn-retry:hover {
+            background-color: #54d7f6;
+            color: #050505;
+            box-shadow: 0 0 15px rgba(84, 215, 246, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="icon">📡❌</div>
+        <h1>Connection Lost</h1>
+        <p>
+            Flowork OS Engine is unable to reach the core server. <br>
+            Please check your internet connection or verify if your firewall is blocking the traffic.
+        </p>
+        <button class="btn-retry" onclick="window.location.reload();">Retry Connection</button>
+    </div>
+</body>
+</html>

@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flowork OS - Multi-Bot Dashboard</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&family=Orbitron:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --cp-bg: #080c18;
+            --cp-surface: #0e1528;
+            --cp-panel: rgba(14, 21, 40, 0.95);
+            --cp-border: rgba(80, 140, 255, 0.22);
+            --cp-border-hover: rgba(80, 180, 255, 0.5);
+            --cp-cyan: #38bdf8;
+            --cp-cyan-dim: #1e6fa0;
+            --cp-pink: #f472b6;
+            --cp-blue: #3b82f6;
+            --cp-purple: #8b5cf6;
+            --cp-green: #06d6a0;
+            --cp-red: #f87171;
+            --cp-yellow: #fbbf24;
+            --cp-orange: #fb923c;
+            --cp-text: #b4c6e0;
+            --cp-text-dim: #3a4d6a;
+            --cp-font-mono: 'JetBrains Mono', 'Consolas', monospace;
+            --cp-font-sans: 'Inter', 'Segoe UI', sans-serif;
+            --cp-glow: 0 0 18px rgba(59, 130, 246, 0.25), 0 0 50px rgba(59, 130, 246, 0.08);
+        }
+
+        body {
+            margin: 0;
+            font-family: var(--cp-font-sans);
+            background-color: var(--cp-bg);
+            color: var(--cp-text);
+            overflow: hidden;
+        }
+
+        #control-panel {
+            display: flex;
+            background: linear-gradient(180deg, rgba(0, 240, 255, 0.03) 0%, var(--cp-panel) 100%);
+            padding: 10px 15px;
+            min-height: 60px;
+            align-items: center;
+            border-bottom: 1px solid var(--cp-border);
+            box-shadow: 0 2px 20px rgba(0, 240, 255, 0.06), inset 0 -1px 0 rgba(255, 0, 102, 0.06);
+            box-sizing: border-box;
+            gap: 8px;
+            flex-wrap: wrap;
+            z-index: 100;
+            position: relative;
+            backdrop-filter: blur(8px);
+        }
+
+        .btn {
+            padding: 6px 12px;
+            border: 1px solid transparent;
+            color: var(--cp-text);
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 12px;
+            font-family: var(--cp-font-mono);
+            transition: all 0.25s cubic-bezier(.4, 0, .2, 1);
+            letter-spacing: 0.3px;
+            backdrop-filter: blur(4px);
+        }
+
+        .btn-blue {
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.15), rgba(0, 102, 255, 0.1));
+            border-color: var(--cp-cyan);
+            color: var(--cp-cyan);
+            text-shadow: 0 0 8px rgba(0, 240, 255, 0.3);
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.1);
+        }
+
+        .btn-blue:hover {
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.25), rgba(0, 102, 255, 0.18));
+            box-shadow: var(--cp-glow);
+            transform: translateY(-1px);
+        }
+
+        .btn-dark {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #8a9ab5;
+        }
+
+        .btn-dark:hover {
+            background: rgba(0, 240, 255, 0.08);
+            border-color: rgba(0, 240, 255, 0.2);
+            color: var(--cp-cyan);
+            box-shadow: 0 0 8px rgba(0, 240, 255, 0.1);
+        }
+
+        .btn-green {
+            background: linear-gradient(135deg, rgba(0, 230, 118, 0.15), rgba(0, 230, 118, 0.05));
+            border-color: var(--cp-green);
+            color: var(--cp-green);
+            text-shadow: 0 0 8px rgba(0, 230, 118, 0.3);
+        }
+
+        .btn-green:hover {
+            background: linear-gradient(135deg, rgba(0, 230, 118, 0.25), rgba(0, 230, 118, 0.12));
+            box-shadow: 0 0 15px rgba(0, 230, 118, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .btn-red {
+            background: linear-gradient(135deg, rgba(255, 51, 68, 0.15), rgba(255, 51, 68, 0.05));
+            border-color: var(--cp-red);
+            color: var(--cp-red);
+        }
+
+        .btn-red:hover {
+            background: linear-gradient(135deg, rgba(255, 51, 68, 0.25), rgba(255, 51, 68, 0.12));
+            box-shadow: 0 0 15px rgba(255, 51, 68, 0.2);
+        }
+
+        .btn-warn {
+            background: linear-gradient(135deg, rgba(255, 0, 102, 0.12), rgba(255, 0, 102, 0.05));
+            border-color: var(--cp-pink);
+            color: var(--cp-pink);
+            text-shadow: 0 0 8px rgba(255, 0, 102, 0.3);
+        }
+
+        .btn-warn:hover {
+            background: linear-gradient(135deg, rgba(255, 0, 102, 0.22), rgba(255, 0, 102, 0.1));
+            box-shadow: 0 0 15px rgba(255, 0, 102, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .input-dark {
+            padding: 6px;
+            background: rgba(0, 240, 255, 0.03);
+            color: var(--cp-text);
+            border: 1px solid var(--cp-border);
+            border-radius: 6px;
+            outline: none;
+            font-size: 12px;
+            font-family: var(--cp-font-mono);
+            transition: all 0.2s;
+        }
+
+        .input-dark:focus {
+            border-color: var(--cp-cyan);
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.15);
+        }
+
+        #url-input {
+            width: 150px;
+        }
+
+        .timer-input {
+            width: 40px;
+            text-align: center;
+        }
+
+        .separator {
+            width: 1px;
+            height: 25px;
+            background: linear-gradient(180deg, transparent, rgba(0, 240, 255, 0.15), transparent);
+            margin: 0 2px;
+        }
+
+        .group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(0, 240, 255, 0.02);
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: 1px solid var(--cp-border);
+            backdrop-filter: blur(4px);
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .loading-icon {
+            display: inline-block;
+            animation: spin 1s linear infinite;
+            font-size: 10px;
+            margin-right: 4px;
+        }
+
+        #profile-sidebar {
+            position: fixed;
+            right: 0;
+            top: 60px;
+            width: 260px;
+            height: calc(100vh - 60px);
+            background: var(--cp-panel);
+            border-left: 1px solid var(--cp-border);
+            transform: translateX(100%);
+            transition: transform 0.3s cubic-bezier(.4, 0, .2, 1);
+            z-index: 99;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+            backdrop-filter: blur(12px);
+            box-shadow: -4px 0 20px rgba(0, 0, 0, 0.4);
+        }
+
+        #profile-sidebar.open {
+            transform: translateX(0);
+        }
+
+        .sidebar-header {
+            background: rgba(0, 240, 255, 0.04);
+            padding: 10px;
+            font-weight: bold;
+            text-align: center;
+            border-bottom: 1px solid var(--cp-border);
+            font-family: var(--cp-font-mono);
+            color: var(--cp-cyan);
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+        }
+
+        .sidebar-content {
+            padding: 10px;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .profile-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 240, 255, 0.03);
+            padding: 8px;
+            margin-bottom: 5px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 1px solid var(--cp-border);
+            font-family: var(--cp-font-mono);
+            font-size: 11px;
+            transition: all 0.2s;
+        }
+
+        .profile-item:hover {
+            background: rgba(0, 240, 255, 0.08);
+            border-color: var(--cp-border-hover);
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.1);
+        }
+
+        #ctx-menu {
+            display: none;
+            position: absolute;
+            background: rgba(10, 10, 20, 0.95);
+            border: 1px solid var(--cp-border);
+            border-radius: 6px;
+            z-index: 10000;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), var(--cp-glow);
+            backdrop-filter: blur(10px);
+        }
+
+        .ctx-item {
+            padding: 8px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            color: var(--cp-pink);
+            font-weight: bold;
+            font-family: var(--cp-font-mono);
+            transition: all 0.15s;
+        }
+
+        .ctx-item:hover {
+            background: rgba(255, 0, 102, 0.1);
+            color: #ff3388;
+        }
+
+        #grid-ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        .grid-dummy-card {
+            position: absolute;
+            background-color: transparent;
+            border-radius: 8px;
+            box-sizing: border-box;
+            pointer-events: auto;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 15px rgba(0, 240, 255, 0.05);
+            border: 1px solid var(--cp-border);
+        }
+
+        .card-header {
+            height: 35px;
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.12), rgba(0, 102, 255, 0.08));
+            color: var(--cp-cyan);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 10px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: grab;
+            user-select: none;
+            font-family: var(--cp-font-mono);
+            border-bottom: 1px solid var(--cp-border);
+        }
+
+        .card-header:active {
+            cursor: grabbing;
+        }
+
+        .card-header-icon {
+            width: 18px;
+            height: 18px;
+        }
+
+        .card-header-menu {
+            cursor: pointer;
+            color: var(--cp-pink);
+            background: rgba(255, 0, 102, 0.12);
+            border: 1px solid rgba(255, 0, 102, 0.25);
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-size: 10px;
+            font-weight: bold;
+            transition: 0.2s;
+            margin-right: 2px;
+        }
+
+        .card-header-menu:hover {
+            background: rgba(255, 0, 102, 0.22);
+            box-shadow: 0 0 8px rgba(255, 0, 102, 0.2);
+        }
+
+        .card-header-back {
+            cursor: pointer;
+            color: #8a9ab5;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-size: 10px;
+            font-weight: bold;
+            transition: 0.2s;
+            margin-right: 2px;
+        }
+
+        .card-header-back:hover {
+            background: rgba(0, 240, 255, 0.08);
+            border-color: rgba(0, 240, 255, 0.2);
+            color: var(--cp-cyan);
+        }
+
+        .card-header-reload {
+            cursor: pointer;
+            color: var(--cp-cyan);
+            background: rgba(0, 240, 255, 0.08);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-size: 10px;
+            font-weight: bold;
+            transition: 0.2s;
+            margin-right: 2px;
+        }
+
+        .card-header-reload:hover {
+            background: rgba(0, 240, 255, 0.16);
+            box-shadow: 0 0 8px rgba(0, 240, 255, 0.15);
+        }
+
+        .card-header-reload-ext {
+            cursor: pointer;
+            color: var(--cp-green);
+            background: rgba(0, 230, 118, 0.08);
+            border: 1px solid rgba(0, 230, 118, 0.2);
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-size: 10px;
+            font-weight: bold;
+            transition: 0.2s;
+            margin-right: 2px;
+        }
+
+        .card-header-reload-ext:hover {
+            background: rgba(0, 230, 118, 0.16);
+            box-shadow: 0 0 8px rgba(0, 230, 118, 0.15);
+        }
+
+        .card-header-nav {
+            padding: 2px 4px;
+            background: rgba(0, 240, 255, 0.03);
+            color: var(--cp-text);
+            border: 1px solid var(--cp-border);
+            border-radius: 4px;
+            outline: none;
+            font-size: 10px;
+            width: 100px;
+            margin-left: 5px;
+            font-family: var(--cp-font-mono);
+        }
+
+        .card-header-go {
+            cursor: pointer;
+            color: var(--cp-text);
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-size: 10px;
+            font-weight: bold;
+            transition: 0.2s;
+            margin-left: 2px;
+        }
+
+        .card-header-go:hover {
+            background: rgba(0, 240, 255, 0.08);
+            border-color: rgba(0, 240, 255, 0.2);
+        }
+
+        .card-header-close {
+            cursor: pointer;
+            color: var(--cp-red);
+            background: rgba(255, 51, 68, 0.08);
+            border: 1px solid rgba(255, 51, 68, 0.2);
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-size: 10px;
+            font-weight: bold;
+            transition: 0.2s;
+            margin-left: 2px;
+        }
+
+        .card-header-close:hover {
+            background: rgba(255, 51, 68, 0.18);
+            box-shadow: 0 0 8px rgba(255, 51, 68, 0.2);
+        }
+
+        .card-middle {
+            flex: 1;
+            display: flex;
+        }
+
+        .card-side {
+            width: 10px;
+            background: var(--cp-surface);
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
+        }
+
+        .card-center {
+            flex: 1;
+            background: transparent;
+        }
+
+        .card-footer {
+            height: 30px;
+            background: var(--cp-surface);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: var(--cp-text-dim);
+            border-top: 1px solid var(--cp-border);
+            font-family: var(--cp-font-mono);
+        }
+
+        .tutorial-card {
+            width: 280px;
+            background: rgba(0, 240, 255, 0.03);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid var(--cp-border);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(.4, 0, .2, 1);
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(8px);
+        }
+
+        .tutorial-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--cp-pink);
+            box-shadow: 0 8px 25px rgba(255, 0, 102, 0.15), 0 0 15px rgba(0, 240, 255, 0.1);
+        }
+
+        .tutorial-thumb {
+            width: 100%;
+            height: 157px;
+            object-fit: cover;
+            border-bottom: 2px solid var(--cp-pink);
+        }
+
+        .tutorial-title {
+            padding: 15px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+            text-align: left;
+            line-height: 1.4;
+            flex-grow: 1;
+            font-family: var(--cp-font-sans);
+        }
+
+        /* ═══ Cyberpunk Scrollbar ═══ */
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 240, 255, 0.15);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--cp-cyan);
+            box-shadow: 0 0 6px rgba(0, 240, 255, 0.4);
+        }
+
+        /* ═══════ MULTI-APP TAB BAR (VERTICAL MODERN DOCK) ═══════ */
+        #fw-tab-bar {
+            display: flex;
+            flex-direction: column;
+            width: 70px;
+            height: calc(100vh - 60px);
+            background: rgba(10, 10, 15, 0.7);
+            border-right: 1px solid rgba(0, 240, 255, 0.15);
+            align-items: center;
+            padding: 15px 0;
+            gap: 12px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            z-index: 99;
+            position: absolute;
+            left: 0;
+            top: 60px;
+            flex-shrink: 0;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
+        }
+
+        #fw-tab-bar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .fw-tab-btn {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 48px;
+            height: auto;
+            min-height: 90px;
+            padding: 15px 0;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 14px;
+            color: #6a7a8a;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            user-select: none;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .fw-tab-btn:hover {
+            background: rgba(0, 240, 255, 0.08);
+            border-color: rgba(0, 240, 255, 0.3);
+            transform: scale(1.08);
+            border-radius: 10px;
+        }
+
+        .fw-tab-btn.active {
+            background: rgba(0, 240, 255, 0.12);
+            color: var(--cp-cyan);
+            border: 1px solid var(--cp-cyan);
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.2), inset 0 0 10px rgba(0, 240, 255, 0.1);
+        }
+
+        .fw-tab-btn.active::before {
+            content: '';
+            position: absolute;
+            left: -11px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 24px;
+            background: var(--cp-cyan);
+            border-radius: 0 4px 4px 0;
+            box-shadow: 0 0 8px var(--cp-cyan);
+            pointer-events: none;
+        }
+
+        .fw-tab-btn.home-tab {
+            min-width: unset;
+        }
+
+        .fw-tab-btn.home-tab.active {
+            border-color: var(--cp-cyan);
+        }
+
+        .fw-tab-icon {
+            display: none;
+        }
+
+        /* Vertical Text Label */
+        .fw-tab-label {
+            position: static;
+            opacity: 1;
+            pointer-events: auto;
+            transform: rotate(-180deg);
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            background: none;
+            border: none;
+            box-shadow: none;
+            color: #8a9aaa;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease-out;
+        }
+
+        .fw-tab-btn.active .fw-tab-label {
+            color: var(--cp-cyan);
+            text-shadow: 0 0 8px rgba(0, 240, 255, 0.3);
+        }
+
+        /* Tooltip arrow removed */
+        .fw-tab-label::after {
+            display: none;
+        }
+
+        .fw-tab-btn:hover .fw-tab-label {
+            color: #fff;
+            transform: rotate(-180deg);
+        }
+
+        .fw-tab-close {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: rgba(20, 20, 30, 1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #8a9aaa;
+            font-size: 10px;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            opacity: 0;
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 10;
+            padding: 0;
+        }
+
+        .fw-tab-btn:hover .fw-tab-close {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        .fw-tab-close:hover {
+            background: var(--cp-red);
+            color: #fff;
+            border-color: var(--cp-red);
+            box-shadow: 0 0 10px rgba(255, 51, 68, 0.6);
+            transform: scale(1.3) !important;
+        }
+
+        /* ═══════ HEADER TABS (inline in control panel) ═══════ */
+        #fw-header-tabs {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            margin-left: 6px;
+            padding: 0 4px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scrollbar-width: none;
+            max-width: 50vw;
+            flex-shrink: 1;
+            min-width: 0;
+        }
+
+        #fw-header-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        #fw-header-tabs:empty {
+            display: none;
+        }
+
+        .header-tab {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            height: 28px;
+            font-family: var(--cp-font-mono);
+            font-size: 10px;
+            color: #7a8a9a;
+            cursor: pointer;
+            border: 1px solid var(--cp-border);
+            border-radius: 6px;
+            transition: all 0.2s;
+            white-space: nowrap;
+            flex-shrink: 0;
+            user-select: none;
+            background: rgba(255, 255, 255, 0.03);
+            max-width: 160px;
+        }
+
+        .header-tab:hover {
+            color: var(--cp-text);
+            background: rgba(0, 240, 255, 0.06);
+            border-color: rgba(0, 240, 255, 0.2);
+        }
+
+        .header-tab.active {
+            color: var(--cp-cyan);
+            background: rgba(0, 240, 255, 0.1);
+            border-color: var(--cp-cyan);
+            box-shadow: 0 0 8px rgba(0, 240, 255, 0.15);
+        }
+
+        .header-tab .ht-icon {
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+
+        .header-tab .ht-label {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .header-tab .ht-close {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+            font-size: 10px;
+            line-height: 1;
+            color: #6a7a8a;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: all 0.15s;
+            flex-shrink: 0;
+            opacity: 0;
+        }
+
+        .header-tab:hover .ht-close {
+            opacity: 1;
+        }
+
+        .header-tab .ht-close:hover {
+            background: rgba(248, 113, 113, 0.3);
+            color: var(--cp-red);
+        }
+
+        .header-tab.dragging {
+            opacity: 0.5;
+        }
+
+        .header-tab.drag-over {
+            box-shadow: inset 2px 0 0 var(--cp-cyan);
+        }
+
+        /* ═══════ NAV BUTTONS ═══════ */
+        .fw-nav-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(0, 240, 255, 0.02);
+            padding: 4px;
+            border-radius: 8px;
+            border: 1px solid var(--cp-border);
+            backdrop-filter: blur(4px);
+        }
+
+        .fw-nav-btn {
+            padding: 6px 14px;
+            border: 1px solid transparent;
+            background: rgba(255, 255, 255, 0.04);
+            color: #8a9ab5;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.25s cubic-bezier(.4, 0, .2, 1);
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: var(--cp-font-mono);
+        }
+
+        .fw-nav-btn:hover {
+            background: rgba(0, 240, 255, 0.08);
+            color: var(--cp-cyan);
+            border-color: rgba(0, 240, 255, 0.2);
+        }
+
+        .fw-nav-btn.active {
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.15), rgba(255, 0, 102, 0.08));
+            color: var(--cp-cyan);
+            border-color: var(--cp-cyan);
+            box-shadow: 0 0 12px rgba(0, 240, 255, 0.15);
+            text-shadow: 0 0 8px rgba(0, 240, 255, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="control-panel">
+        <button id="btn-flowork-refresh" class="btn btn-dark" style="margin-right: 8px;" title="Refresh Engine / Tab">🔄
+            Refresh</button>
+
+        <div class="separator" id="sep-nav"></div>
+
+        <div class="group" id="nav-group">
+            <button id="btn-back" class="btn btn-dark" title="Go Back">⬅️</button>
+            <button id="btn-refresh" class="btn btn-dark" title="Refresh ALL Tabs">🔄</button>
+
+            <input type="text" id="nav-url-input" class="input-dark" style="width: 250px; display: none;"
+                placeholder="Navigate URL..." title="Press Enter to navigate" />
+            <button id="btn-nav-go" class="btn btn-blue" style="display: none;" title="Go to URL">GO 🚀</button>
+
+            <select id="bot-selector" class="input-dark" style="max-width: 120px;">
+                <option value="">-- Select Device --</option>
+            </select>
+        </div>
+
+        <div class="separator" id="sep-scroll"></div>
+
+        <div class="group" id="auto-scroll-group" style="display: none;">
+            <button id="btn-auto-scroll" class="btn btn-warn" title="Start Auto Scroll">⬇️ Auto Scroll</button>
+            <button id="btn-stop-scroll" class="btn btn-red" style="display:none;" title="Stop Auto Scroll">🛑
+                Stop</button>
+            <input type="number" id="scroll-min" class="input-dark timer-input" value="3"
+                title="Min interval (seconds)">
+            <span style="font-size: 10px;">-</span>
+            <input type="number" id="scroll-max" class="input-dark timer-input" value="8"
+                title="Max interval (seconds)">
+            <span style="font-size: 10px;">sec</span>
+
+            <span class="separator" style="height: 15px; margin: 0 5px;"></span>
+            <span style="font-size: 10px;">Total:</span>
+            <input type="number" id="scroll-total" class="input-dark timer-input" value="100" title="Total scroll steps"
+                style="width: 45px;">
+            <span style="font-size: 10px;">Up:</span>
+            <input type="number" id="scroll-up" class="input-dark timer-input" value="20"
+                title="How many times to scroll up (random)" style="width: 35px;">
+        </div>
+
+        <div class="separator" id="sep-refresh"></div>
+
+        <div class="group" id="refresh-group">
+            <input type="checkbox" id="auto-refresh-checkbox" style="cursor: pointer;" title="Enable Auto Refresh">
+            <label for="auto-refresh-checkbox"
+                style="font-size: 10px; cursor: pointer; color: #17a2b8; font-weight: bold;">🔄 Auto Refresh</label>
+            <input type="number" id="refresh-interval" class="input-dark timer-input" value="60"
+                title="Refresh interval (seconds)" style="width: 45px;">
+            <span style="font-size: 10px;">sec</span>
+        </div>
+
+        <div class="separator" id="sep-bypass"></div>
+
+        <div class="group" id="bypass-group">
+            <input type="checkbox" id="record-bypass-checkbox" style="cursor: pointer;"
+                title="Record Mode to Auto-Bypass Popups/Ads">
+            <label for="record-bypass-checkbox"
+                style="font-size: 10px; cursor: pointer; color: #ff4d4d; font-weight: bold;">🔴 Record Bypass</label>
+            <button id="btn-clear-bypass" class="btn btn-dark" style="font-size: 10px; padding: 2px 5px;"
+                title="Clear Bypass Database">🧹 Clear Mem</button>
+        </div>
+
+        <div class="separator" id="sep-addbot"></div>
+
+        <div class="group" id="addbot-group">
+            <button id="btn-add-device-modal" class="btn btn-green">+ Add Bot</button>
+            <button id="btn-app-builder" class="btn btn-warn" title="Open AI Assistant">🤖 AI Assistant</button>
+        </div>
+
+        <div class="separator" id="sep-profile"></div>
+
+        <div style="margin-left: auto;" id="profile-container">
+            <button id="btn-toggle-sidebar" class="btn btn-blue">📁 Profiles</button>
+        </div>
+
+        <div class="separator" id="sep-settings"></div>
+        <!-- HEADER TABS (inline in control panel, for AI-opened apps/browser) -->
+        <div id="fw-header-tabs"></div>
+        <button id="btn-settings" class="btn btn-dark" title="Engine Settings">⚙️</button>
+    </div>
+
+    <div id="fw-tab-bar">
+        <!-- PERMANENT SIDEBAR TABS — Fixed set, cannot be added or removed -->
+        <div class="fw-tab-btn active" id="fw-tab-dashboard" data-tab-id="dashboard" title="Dashboard"
+            style="cursor:pointer;">
+            <span class="fw-tab-label">🏠 Dashboard</span>
+        </div>
+        <div class="fw-tab-btn" id="fw-tab-botfarm" data-tab-id="botfarm" title="Bot Farm (Mobile Mode)"
+            style="cursor:pointer;">
+            <span class="fw-tab-label">Bot Farm</span>
+        </div>
+        <div class="fw-tab-btn" id="fw-tab-browser" data-tab-id="browser" title="Browser (Desktop Mode)"
+            style="cursor:pointer;">
+            <span class="fw-tab-label">Browser</span>
+        </div>
+        <div class="fw-tab-btn" id="fw-tab-aitrain" data-tab-id="aitrain" title="AI Training Center"
+            style="cursor:pointer;">
+            <span class="fw-tab-label">AI Train</span>
+        </div>
+        <div class="fw-tab-btn" id="fw-tab-flow" data-tab-id="flowork-flow" title="Flow Designer"
+            style="cursor:pointer;">
+            <span class="fw-tab-label">Flow</span>
+        </div>
+        <div class="fw-tab-btn" id="fw-tab-store" data-tab-id="flowork-store" title="App Store" style="cursor:pointer;">
+            <span class="fw-tab-label">Store</span>
+        </div>
+        <div class="fw-tab-btn" id="fw-tab-tutorial" data-tab-id="tutorial" title="Tutorials" style="cursor:pointer;">
+            <span class="fw-tab-label">Tutorial</span>
+        </div>
+    </div>
+
+    <div id="add-bot-modal"
+        style="display: none; position: fixed; top: 60px; left: 0; width: 100vw; height: calc(100vh - 60px); background: rgba(10,10,15,0.85); z-index: 100000; justify-content: center; align-items: center; backdrop-filter: blur(4px);">
+        <div
+            style="background: rgba(13,13,20,0.95); padding: 25px; border-radius: 10px; border: 1px solid rgba(0,240,255,0.2); width: 400px; box-shadow: 0 10px 40px rgba(0,0,0,0.6), 0 0 20px rgba(0,240,255,0.08); display: flex; flex-direction: column; gap: 15px; backdrop-filter: blur(12px);">
+            <div
+                style="font-weight: 700; font-size: 15px; color: #00f0ff; border-bottom: 1px solid rgba(0,240,255,0.12); padding-bottom: 10px; font-family: 'Orbitron','Inter',sans-serif; letter-spacing: 1px;">
+                🤖 Launch New Bot / Device
+            </div>
+            <div>
+                <label style="font-size: 12px; color: #aaa;">Target Initial URL:</label><br>
+                <input type="text" id="modal-url-input" class="input-dark" value="https://google.com"
+                    style="width: 100%; box-sizing: border-box; margin-top: 5px; font-size: 14px; padding: 8px;"
+                    placeholder="https://..." />
+            </div>
+
+            <div
+                style="display: flex; gap: 10px; background: rgba(0,240,255,0.02); padding: 8px; border-radius: 6px; border: 1px solid rgba(0,240,255,0.08); flex-wrap: wrap;">
+                <div style="width: 100%;">
+                    <input type="checkbox" id="modal-ghost-cursor-checkbox" checked style="cursor: pointer;">
+                    <label for="modal-ghost-cursor-checkbox" style="font-size: 11px; cursor: pointer; color: #fff;">👻
+                        Ghost Cursor (Mouse Movement Simulation)</label>
+                </div>
+                <div style="width: 100%;">
+                    <input type="checkbox" id="modal-bandwidth-saver-checkbox" checked style="cursor: pointer;">
+                    <label for="modal-bandwidth-saver-checkbox"
+                        style="font-size: 11px; cursor: pointer; color: #fff;">📉 Low Bandwidth (144p) & 🔇 Stealth
+                        Mute</label>
+                </div>
+            </div>
+
+            <div
+                style="display: flex; gap: 10px; background: rgba(0,240,255,0.02); padding: 8px; border-radius: 6px; border: 1px solid rgba(0,240,255,0.08); flex-wrap: wrap;">
+                <div style="width: 100%; display: flex; align-items: center; justify-content: space-between;">
+                    <div>
+                        <input type="checkbox" id="modal-sleep-cycle-checkbox" checked style="cursor: pointer;">
+                        <label for="modal-sleep-cycle-checkbox"
+                            style="font-size: 11px; cursor: pointer; color: var(--cp-cyan, #00f0ff); font-weight: bold;">💤
+                            Human Sleep
+                            Cycle (Organic Mode)</label>
+                    </div>
+                </div>
+                <div id="modal-sleep-config" style="display: flex; gap: 5px; width: 100%; align-items: center;">
+                    <span style="font-size: 10px; color: #aaa;">Work:</span>
+                    <input type="number" id="sleep-work-min" class="input-dark timer-input" value="45"
+                        title="Work minutes before resting" style="width: 40px;">
+                    <span style="font-size: 10px; color: #aaa;">min</span>
+
+                    <span class="separator" style="height: 15px; margin: 0 5px;"></span>
+
+                    <span style="font-size: 10px; color: #aaa;">Rest:</span>
+                    <input type="number" id="sleep-rest-min" class="input-dark timer-input" value="15"
+                        title="Rest minutes" style="width: 40px;">
+                    <span style="font-size: 10px; color: #aaa;">min</span>
+                </div>
+            </div>
+
+            <div
+                style="display: flex; align-items: center; gap: 8px; background: rgba(0,240,255,0.02); padding: 8px; border-radius: 6px; border: 1px solid rgba(0,240,255,0.08);">
+                <input type="checkbox" id="modal-proxy-checkbox" style="cursor: pointer;">
+                <label for="modal-proxy-checkbox"
+                    style="font-size: 12px; cursor: pointer; color: var(--cp-pink, #ff0066); font-weight: bold;">🛡️
+                    Enable Stealth /
+                    Proxy Mode</label>
+            </div>
+            <div id="modal-proxy-container" style="display: none;">
+                <label style="font-size: 12px; color: #aaa;">Proxy Address:</label><br>
+                <input type="text" id="modal-proxy-input" class="input-dark"
+                    style="width: 100%; box-sizing: border-box; margin-top: 5px; font-size: 14px; padding: 8px;"
+                    placeholder="socks5://ip:port" />
+
+                <button id="btn-buy-proxy" class="btn btn-warn"
+                    style="width: 100%; margin-top: 10px; font-size: 12px; padding: 8px;">🛒 Buy Trusted & Proven Safe
+                    IP Here</button>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button id="btn-modal-cancel" class="btn btn-dark" style="flex: 1; padding: 10px;">Cancel</button>
+                <button id="btn-modal-launch" class="btn btn-green" style="flex: 1; padding: 10px;">🚀 Launch
+                    Bot</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="cookie-modal"
+        style="display: none; position: fixed; top: 60px; left: 0; width: 100vw; height: calc(100vh - 60px); background: rgba(10,10,15,0.85); z-index: 100000; justify-content: center; align-items: center; backdrop-filter: blur(4px);">
+        <div
+            style="background: rgba(13,13,20,0.95); padding: 20px; border-radius: 10px; border: 1px solid rgba(255,0,102,0.2); width: 500px; box-shadow: 0 10px 40px rgba(0,0,0,0.6), 0 0 15px rgba(255,0,102,0.08); display: flex; flex-direction: column; gap: 15px; backdrop-filter: blur(12px);">
+            <div
+                style="font-weight: 700; font-size: 15px; color: var(--cp-pink, #ff0066); border-bottom: 1px solid rgba(255,0,102,0.12); padding-bottom: 10px; font-family: 'Orbitron','Inter',sans-serif; letter-spacing: 1px;">
+                🍪 Cookie Vault (Netscape Format) - <span id="cookie-bot-id" style="color:#00f0ff;"></span>
+            </div>
+            <div style="font-size: 12px; color: #aaa;">Paste Netscape cookies for passwordless login, or click Export to
+                steal the active login session.</div>
+            <textarea id="cookie-textarea" class="input-dark"
+                style="width: 100%; box-sizing: border-box; height: 200px; resize: none; font-family: monospace; font-size: 11px; white-space: pre; overflow-wrap: normal; overflow-x: scroll;"
+                placeholder="# Netscape HTTP Cookie File..."></textarea>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button id="btn-cookie-cancel" class="btn btn-dark" style="flex: 1;">Cancel</button>
+                <button id="btn-cookie-export" class="btn btn-blue" style="flex: 1;">⬇️ Export Current</button>
+                <button id="btn-cookie-import" class="btn btn-green" style="flex: 1;">🚀 Import & Reload</button>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- AI TRAIN PAGE (embedded, populated by ai_train.js) -->
+    <div id="aitrain-view"
+        style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:var(--cp-bg); flex-direction:column; overflow:hidden;">
+    </div>
+
+    <!-- SETTINGS PAGE (embedded, populated by settings_ui.js) -->
+    <div id="settings-view"
+        style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:var(--cp-bg); flex-direction:column; overflow:hidden;">
+    </div>
+
+    <div id="grid-ui-layer" style="display: none;"></div>
+
+    <div id="profile-sidebar">
+        <div class="sidebar-header">📦 Session Profiles</div>
+        <div style="padding: 10px; border-bottom: 1px solid #444;">
+            <input type="text" id="profile-name-input" class="input-dark" placeholder="Enter Profile Name..."
+                style="width: 100%; box-sizing: border-box; margin-bottom: 5px;">
+            <button id="btn-save-profile" class="btn btn-green" style="width: 100%;">💾 Save Current Tabs to
+                Profile</button>
+        </div>
+        <div class="sidebar-content" id="profile-list"></div>
+        <div style="padding: 10px; font-size: 10px; color: #888; text-align: center;">*Right-Click a profile to Delete
+        </div>
+    </div>
+
+    <div id="ctx-menu">
+        <div class="ctx-item" id="ctx-delete-profile">🗑️ Delete Profile</div>
+    </div>
+
+    <!-- TUTORIAL OVERLAY (populated by farm_tutorial.js) -->
+    <div id="tutorial-view"
+        style="display:none; position:fixed; top:60px; left:70px; width:calc(100vw - 70px); height:calc(100vh - 60px); background:rgba(8,12,24,0.97); z-index:50000; flex-direction:column; overflow:hidden; backdrop-filter:blur(10px);">
+        <div
+            style="padding:15px 20px; border-bottom:1px solid rgba(80,140,255,0.22); display:flex; align-items:center; justify-content:space-between; background:rgba(59,130,246,0.04);">
+            <div
+                style="font-weight:700; font-size:15px; font-family:'Orbitron','Inter',sans-serif; letter-spacing:2px; background:linear-gradient(135deg,#38bdf8,#8b5cf6); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;">
+                📺 FLOWORK OS TUTORIALS</div>
+            <div style="font-size:11px; color:#3a4d6a; font-family:'JetBrains Mono',monospace;">Videos play in external
+                browser (Chrome/Edge)</div>
+        </div>
+        <div id="tutorial-list"
+            style="flex:1; overflow-y:auto; padding:20px; display:flex; flex-wrap:wrap; gap:15px; justify-content:center; align-content:flex-start;">
+        </div>
+    </div>
+
+    <div id="custom-alert-modal"
+        style="display: none; position: fixed; top: 60px; left: 0; width: 100vw; height: calc(100vh - 60px); background: transparent; z-index: 100000; justify-content: center; align-items: center; pointer-events: none;">
+        <div
+            style="background: rgba(13,13,20,0.95); padding: 20px; border-radius: 10px; border: 1px solid rgba(0,240,255,0.2); width: 350px; box-shadow: 0 10px 40px rgba(0,0,0,0.6), 0 0 20px rgba(0,240,255,0.08); display: flex; flex-direction: column; gap: 15px; pointer-events: auto; backdrop-filter: blur(12px);">
+            <div
+                style="font-weight: bold; font-size: 14px; color: #ff0066; display: flex; align-items: center; gap: 8px; font-family: 'Orbitron','Inter',sans-serif; letter-spacing: 1px;">
+                <span>⚠️</span> Flowork Notice
+            </div>
+            <textarea id="custom-alert-text" readonly
+                style="width: 100%; height: 80px; background: rgba(0,240,255,0.03); color: var(--cp-text, #c8d6e5); border: 1px solid rgba(0,240,255,0.12); border-radius: 6px; padding: 8px; font-family: 'JetBrains Mono',monospace; font-size: 12px; resize: none; box-sizing: border-box; outline: none;"></textarea>
+            <div style="display: flex; gap: 10px;">
+                <button id="btn-alert-copy" class="btn btn-blue" style="flex: 1;">📋 Copy Text</button>
+                <button id="btn-alert-close" class="btn btn-dark" style="flex: 1;">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="./renderer.js"></script>
+    <script src="./brain/core_ui.js"></script>
+    <script src="./brain/bot_manager.js"></script>
+    <script src="./brain/grid_profiles.js"></script>
+    <script src="./brain/farm_tutorial.js"></script>
+    <script src="./brain/agent_mode_router.js"></script>
+    <script src="./brain/ai_train.js"></script>
+    <script src="./brain/settings_ui.js"></script>
+    <script src="./brain/tab_manager.js"></script>
+    <script src="./brain/nav_webview.js"></script>
+</body>
+
+</html>

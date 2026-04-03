@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>FLOWORKOS™ Smart Module Test</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #0d1117; color: #c9d1d9; font-family: 'Consolas', 'Courier New', monospace; padding: 24px; }
+        h1 { color: #58a6ff; font-size: 20px; margin-bottom: 16px; }
+        .test-group { margin-bottom: 20px; border: 1px solid #30363d; border-radius: 8px; overflow: hidden; }
+        .test-group-header { background: #161b22; padding: 10px 16px; font-weight: bold; color: #8b949e; font-size: 13px; }
+        .test-item { display: flex; align-items: center; padding: 8px 16px; border-top: 1px solid #21262d; }
+        .test-item .icon { width: 24px; font-size: 16px; }
+        .test-item .name { flex: 1; font-size: 13px; }
+        .test-item .status { font-size: 12px; padding: 2px 8px; border-radius: 12px; }
+        .pass { background: #0d4429; color: #3fb950; }
+        .fail { background: #4a1d1d; color: #f85149; }
+        .warn { background: #3d2e00; color: #d29922; }
+        .detail { font-size: 11px; color: #8b949e; margin-left: 8px; }
+        #summary { margin-top: 16px; padding: 16px; background: #161b22; border-radius: 8px; font-size: 14px; }
+        #summary.all-pass { border: 1px solid #3fb950; }
+        #summary.has-fail { border: 1px solid #f85149; }
+        #log { margin-top: 16px; background: #0d1117; border: 1px solid #30363d; border-radius: 8px; padding: 12px; max-height: 300px; overflow-y: auto; font-size: 11px; white-space: pre-wrap; }
+        .log-line { padding: 2px 0; }
+        .log-error { color: #f85149; }
+        .log-warn { color: #d29922; }
+        .log-ok { color: #3fb950; }
+    </style>
+</head>
+<body>
+    <h1>🧪 FLOWORKOS™ Smart Module Test Suite</h1>
+    <div id="results"></div>
+    <div id="summary"></div>
+    <h3 style="color:#8b949e; margin-top:20px; font-size:13px;">📋 Console Log</h3>
+    <div id="log"></div>
+
+    <!-- Load ALL smart modules in order -->
+    <script src="./brain/smart/agent/FLOWORKOS_model_failover.js"></script>
+    <script src="./brain/smart/agent/FLOWORKOS_loop_detector.js"></script>
+    <script src="./brain/smart/agent/FLOWORKOS_compaction.js"></script>
+    <script src="./brain/smart/agent/FLOWORKOS_usage_tracking.js"></script>
+    <script src="./brain/smart/security/FLOWORKOS_tool_policy.js"></script>
+    <script src="./brain/smart/security/FLOWORKOS_redaction.js"></script>
+    <script src="./brain/smart/subagents/FLOWORKOS_subagent_manager.js"></script>
+    <script src="./brain/smart/sessions/FLOWORKOS_session_manager.js"></script>
+    <script src="./brain/smart/skills/FLOWORKOS_skills_manager.js"></script>
+    <script src="./brain/smart/gateway/FLOWORKOS_gateway.js"></script>
+    <script src="./brain/smart/context/FLOWORKOS_context_guard.js"></script>
+    <script src="./brain/smart/mcp/FLOWORKOS_mcp_client.js"></script>
+    <script src="./brain/smart/voice/FLOWORKOS_voice_tts.js"></script>
+    <script src="./brain/smart/media/FLOWORKOS_media_pipeline.js"></script>
+    <script src="./brain/smart/FLOWORKOS_smart_loader.js"></script>
+
+    <script>
+    // ── Capture console output ───────────────────────────
+    const logDiv = document.getElementById('log');
+    const origLog = console.log;
+    const origWarn = console.warn;
+    const origError = console.error;
+
+    function addLog(text, cls) {
+        const line = document.createElement('div');
+        line.className = 'log-line ' + (cls || '');
+        line.textContent = text;
+        logDiv.appendChild(line);
+    }
+
+    console.log = function(...args) {
+        origLog.apply(console, args);
+        addLog(args.join(' '), 'log-ok');
+    };
+    console.warn = function(...args) {
+        origWarn.apply(console, args);
+        addLog('⚠ ' + args.join(' '), 'log-warn');
+    };
+    console.error = function(...args) {
+        origError.apply(console, args);
+        addLog('❌ ' + args.join(' '), 'log-error');
+    };
+
+    // ── Test Functions ───────────────────────────────────
+    const tests = [];
+
+    function test(group, name, fn) {
+        tests.push({ group, name, fn });
+    }
+
+    // ═══ TEST 1: Module Load Check ═══
+    test('Module Load', 'FLOWORKOS_ModelFailover', () => {
+        if (!window.FLOWORKOS_ModelFailover) throw 'Not loaded';
+        if (!window.FLOWORKOS_ModelFailover.runWithModelFailover) throw 'Missing runWithModelFailover()';
+        return 'loaded + runWithModelFailover() exists';
+    });
+
+    test('Module Load', 'FLOWORKOS_LoopDetector', () => {
+        if (!window.FLOWORKOS_LoopDetector) throw 'Not loaded';
+        if (!window.FLOWORKOS_LoopDetector.detectToolCallLoop) throw 'Missing detectToolCallLoop()';
+        return 'loaded + detectToolCallLoop() exists';
+    });
+
+    test('Module Load', 'FLOWORKOS_Compaction', () => {
+        if (!window.FLOWORKOS_Compaction) throw 'Not loaded';
+        if (!window.FLOWORKOS_Compaction.compactMessages) throw 'Missing compactMessages()';
+        return 'loaded + compactMessages() exists';
+    });
+
+    test('Module Load', 'FLOWORKOS_UsageTracking', () => {
+        if (!window.FLOWORKOS_UsageTracking) throw 'Not loaded';
+        if (!window.FLOWORKOS_UsageTracking.recordUsage) throw 'Missing recordUsage()';
+        return 'loaded + recordUsage() exists';
+    });
+
+    test('Module Load', 'FLOWORKOS_ToolPolicy', () => {
+        if (!window.FLOWORKOS_ToolPolicy) throw 'Not loaded';
+        if (!window.FLOWORKOS_ToolPolicy.evaluatePolicy) throw 'Missing evaluatePolicy()';
+        return 'loaded + evaluatePolicy() exists';
+    });
+
+    test('Module Load', 'FLOWORKOS_Redaction', () => {
+        if (!window.FLOWORKOS_Redaction) throw 'Not loaded';
+        if (!window.FLOWORKOS_Redaction.redact) throw 'Missing redact()';
+        return 'loaded + redact() exists';
+    });
+
+    test('Module Load', 'FLOWORKOS_SubAgents', () => {
+        if (!window.FLOWORKOS_SubAgents) throw 'Not loaded';
+        if (!window.FLOWORKOS_SubAgents.spawnSubagent) throw 'Missing spawnSubagent()';
+        return 'loaded + spawnSubagent() exists';
+    });
+
+    test('Module Load', 'FLOWORKOS_Sessions', () => {
+        if (!window.FLOWORKOS_Sessions) throw 'Not loaded';
+        if (!window.FLOWORKOS_Sessions.createSession) throw 'Missing createSession()';
+        return 'loaded + createSession() exists';
+    });
+
+    test('Module Load', 'FLOWORKOS_Skills', () => {
+        if (!window.FLOWORKOS_Skills) throw 'Not loaded';
+        if (!window.FLOWORKOS_Skills.listSkills) throw 'Missing listSkills()';
+        return 'loaded + listSkills() exists';
+    });
+
+    test('Module Load', 'FLOWORKOS_Gateway', () => {
+        if (!window.FLOWORKOS_Gateway) throw 'Not loaded';
+        if (!window.FLOWORKOS_Gateway.handleInbound) throw 'Missing handleInbound()';
+        return 'loaded + handleInbound() exists';
+    });
+
+    test('Module Load', 'FLOWORKOS_ContextGuard', () => {
+        if (!window.FLOWORKOS_ContextGuard) throw 'Not loaded';
+        if (!window.FLOWORKOS_ContextGuard.estimateUsage) throw 'Missing estimateUsage()';
+        return 'loaded + estimateUsage() exists';
+    });
+
+    test('Module Load', 'FLOWORKOS_MCP', () => {
+        if (!window.FLOWORKOS_MCP) throw 'Not loaded';
+        if (!window.FLOWORKOS_MCP.connectSSE) throw 'Missing connectSSE()';
+        return 'loaded + connectSSE() exists';
+    });
+
+    test('Module Load', 'FLOWORKOS_Voice', () => {
+        if (!window.FLOWORKOS_Voice) throw 'Not loaded';
+        if (!window.FLOWORKOS_Voice.speak) throw 'Missing speak()';
+        return 'loaded + speak() exists';
+    });
+
+    test('Module Load', 'FLOWORKOS_Media', () => {
+        if (!window.FLOWORKOS_Media) throw 'Not loaded';
+        if (!window.FLOWORKOS_Media.analyzeImage) throw 'Missing analyzeImage()';
+        return 'loaded + analyzeImage() exists';
+    });
+
+    test('Module Load', 'FLOWORKOS_Smart', () => {
+        if (!window.FLOWORKOS_Smart) throw 'Not loaded';
+        if (!window.FLOWORKOS_Smart.getSmartStatus) throw 'Missing getSmartStatus()';
+        return 'loaded + getSmartStatus() exists';
+    });
+
+    // ═══ TEST 2: Functional Tests ═══
+
+    test('Loop Detector', 'Detect repeat tool call', () => {
+        FLOWORKOS_LoopDetector.resetAll();
+        for (let i = 0; i < 6; i++) {
+            FLOWORKOS_LoopDetector.recordToolCall('read_file', { path: '/test.txt' });
+            FLOWORKOS_LoopDetector.recordToolCallOutcome('read_file', { path: '/test.txt' }, 'same content', null);
+        }
+        const result = FLOWORKOS_LoopDetector.detectToolCallLoop('read_file', { path: '/test.txt' });
+        if (!result.stuck) throw 'Should detect loop after 6 repeats';
+        FLOWORKOS_LoopDetector.resetAll();
+        return `Detected: ${result.detector} (${result.level})`;
+    });
+
+    test('Loop Detector', 'No false positive on unique calls', () => {
+        FLOWORKOS_LoopDetector.resetAll();
+        for (let i = 0; i < 5; i++) {
+            FLOWORKOS_LoopDetector.recordToolCall('read_file', { path: `/file_${i}.txt` });
+        }
+        const result = FLOWORKOS_LoopDetector.detectToolCallLoop('read_file', { path: '/file_5.txt' });
+        if (result.stuck) throw 'False positive on unique calls';
+        FLOWORKOS_LoopDetector.resetAll();
+        return 'No false positive ✓';
+    });
+
+    test('Tool Policy', 'Block rm -rf', () => {
+        const result = FLOWORKOS_ToolPolicy.evaluatePolicy('run_command', { command: 'rm -rf /' });
+        if (result.allowed) throw 'Should block rm -rf';
+        return `Blocked: ${result.reason}`;
+    });
+
+    test('Tool Policy', 'Block DROP TABLE', () => {
+        const result = FLOWORKOS_ToolPolicy.evaluatePolicy('run_command', { command: 'DROP TABLE users' });
+        if (result.allowed) throw 'Should block DROP TABLE';
+        return `Blocked: ${result.reason}`;
+    });
+
+    test('Tool Policy', 'Allow safe commands', () => {
+        const result = FLOWORKOS_ToolPolicy.evaluatePolicy('read_file', { path: 'C:\\flowork\\test.txt' });
+        if (!result.allowed) throw `Blocked safe command: ${result.reason}`;
+        return 'Allowed ✓';
+    });
+
+    test('Redaction', 'Redact API key', () => {
+        const input = 'My key is sk-1234567890abcdefghijklmnop';
+        const result = FLOWORKOS_Redaction.redact(input);
+        if (result.text.includes('sk-1234567890')) throw 'API key not redacted';
+        if (result.redactions.length === 0) throw 'No redactions reported';
+        return `Redacted ${result.redactions.length} item(s): ${result.redactions.map(r => r.label).join(', ')}`;
+    });
+
+    test('Redaction', 'Redact JWT', () => {
+        const jwt = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
+        const result = FLOWORKOS_Redaction.redact(jwt);
+        if (result.redactions.length === 0) throw 'JWT not detected';
+        return `JWT redacted ✓`;
+    });
+
+    test('Redaction', 'Skip safe text', () => {
+        const input = 'Hello world, this is a normal message.';
+        const result = FLOWORKOS_Redaction.redact(input);
+        if (result.text !== input) throw 'Normal text was modified';
+        return 'Safe text untouched ✓';
+    });
+
+    test('Compaction', 'Compact messages', () => {
+        const msgs = [];
+        for (let i = 0; i < 20; i++) {
+            msgs.push({ role: 'user', content: `Message ${i}: ${'x'.repeat(3000)}` });
+            msgs.push({ role: 'assistant', content: `Reply ${i}: ${'y'.repeat(3000)}` });
+        }
+        const result = FLOWORKOS_Compaction.compactMessages(msgs, { maxContextChars: 50000 });
+        if (!result || !result.messages) throw 'No result returned';
+        if (!result.compacted) throw 'No compaction triggered (size: ' + result.stats.currentSize + '/' + result.stats.triggerSize + ')';
+        return `${msgs.length} → ${result.messages.length} msgs, ${result.stats.reductionPercent} reduced`;
+    });
+
+    test('Usage Tracking', 'Record and query usage', () => {
+        FLOWORKOS_UsageTracking.recordUsage({
+            provider: 'google', model: 'gemini-2.5-flash',
+            inputTokens: 1000, outputTokens: 500, latencyMs: 1200,
+        });
+        const session = FLOWORKOS_UsageTracking.getSessionUsage();
+        if (!session || session.totalCalls < 1) throw 'Usage not recorded';
+        return `Recorded: ${session.totalCalls} call(s), ${session.totalInputTokens} in / ${session.totalOutputTokens} out`;
+    });
+
+    test('Context Guard', 'Estimate usage', () => {
+        window.chatHistory = [
+            { role: 'system', content: 'You are an AI assistant.' },
+            { role: 'user', content: 'Hello!' },
+            { role: 'assistant', content: 'Hi there!' },
+        ];
+        const usage = FLOWORKOS_ContextGuard.estimateUsage(undefined, 'gpt-4o');
+        if (!usage || !usage.usagePercent) throw 'No usage estimate';
+        return `${usage.usagePercent} used (${usage.totalTokens} tokens, window: ${usage.contextWindow})`;
+    });
+
+    test('Context Guard', 'Model context window lookup', () => {
+        const gemini = FLOWORKOS_ContextGuard.getContextWindow('gemini-2.5-pro');
+        const gpt4o = FLOWORKOS_ContextGuard.getContextWindow('gpt-4o');
+        if (gemini !== 1048576) throw `Gemini wrong: ${gemini}`;
+        if (gpt4o !== 128000) throw `GPT-4o wrong: ${gpt4o}`;
+        return `Gemini: ${gemini.toLocaleString()}, GPT-4o: ${gpt4o.toLocaleString()} ✓`;
+    });
+
+    test('Sub-Agents', 'Spawn and list', () => {
+        FLOWORKOS_SubAgents.resetAll();
+        const result = FLOWORKOS_SubAgents.spawnSubagent({ task: 'Test task', label: 'TestAgent' });
+        if (result.status !== 'accepted') throw `Spawn failed: ${result.error}`;
+        const list = FLOWORKOS_SubAgents.listSubagents();
+        if (list.active.length !== 1) throw `Expected 1 active, got ${list.active.length}`;
+        FLOWORKOS_SubAgents.resetAll();
+        return `Spawned "${result.label}" (depth ${result.depth}) ✓`;
+    });
+
+    test('Sub-Agents', 'Depth limit', () => {
+        FLOWORKOS_SubAgents.resetAll();
+        const result = FLOWORKOS_SubAgents.spawnSubagent({ task: 'Too deep', currentDepth: 3 });
+        if (result.status !== 'forbidden') throw 'Should be forbidden at max depth';
+        FLOWORKOS_SubAgents.resetAll();
+        return `Correctly blocked at depth 3 ✓`;
+    });
+
+    test('Skills', 'List built-in skills', () => {
+        const skills = FLOWORKOS_Skills.listSkills();
+        if (!skills || skills.length < 5) throw `Expected ≥5 skills, got ${skills.length}`;
+        return `${skills.length} skills: ${skills.map(s => s.name).join(', ')}`;
+    });
+
+    test('Skills', 'Activate and deactivate', () => {
+        const act = FLOWORKOS_Skills.activateSkill('web-search');
+        if (act.status !== 'ok' && act.status !== 'already_active') throw `Activate failed: ${JSON.stringify(act)}`;
+        const deact = FLOWORKOS_Skills.deactivateSkill('web-search');
+        return 'Activate/deactivate cycle ✓';
+    });
+
+    test('Gateway', 'List channels', () => {
+        const channels = FLOWORKOS_Gateway.listChannels();
+        if (!channels || channels.length < 1) throw 'No channels registered';
+        return `${channels.length} channel(s): ${channels.map(c => c.name).join(', ')}`;
+    });
+
+    test('Gateway', 'Normalize inbound message', () => {
+        const msg = FLOWORKOS_Gateway.normalizeInbound({ text: 'Hello', from: 'user123', chat_id: 'chat1' }, 'telegram');
+        if (msg.text !== 'Hello') throw 'Text not preserved';
+        if (msg.from !== 'user123') throw 'From not preserved';
+        if (msg.channel !== 'telegram') throw 'Channel not set';
+        return `Normalized: ${msg.channel}/${msg.from}: "${msg.text}" ✓`;
+    });
+
+    test('Gateway', 'Strip markdown (for WhatsApp)', () => {
+        const result = FLOWORKOS_Gateway.stripMarkdown('**bold** and `code` and [link](http://test.com)');
+        if (result.includes('**')) throw 'Bold not stripped';
+        if (result.includes('`')) throw 'Code not stripped';
+        return `"${result}" ✓`;
+    });
+
+    test('Media', 'MIME detection', () => {
+        if (FLOWORKOS_Media.getMimeType('test.jpg') !== 'image/jpeg') throw 'jpg failed';
+        if (FLOWORKOS_Media.getMimeType('test.mp3') !== 'audio/mpeg') throw 'mp3 failed';
+        if (FLOWORKOS_Media.getMimeType('test.py') !== 'text/x-python') throw 'py  failed';
+        return 'jpg→image/jpeg, mp3→audio/mpeg, py→text/x-python ✓';
+    });
+
+    test('Media', 'isImage / isAudio / isVideo', () => {
+        if (!FLOWORKOS_Media.isImage('photo.png')) throw 'png not detected as image';
+        if (!FLOWORKOS_Media.isAudio('song.mp3')) throw 'mp3 not detected as audio';
+        if (!FLOWORKOS_Media.isVideo('clip.mp4')) throw 'mp4 not detected as video';
+        if (FLOWORKOS_Media.isImage('test.txt')) throw 'txt detected as image (false positive)';
+        return 'Image/Audio/Video detection ✓';
+    });
+
+    test('Voice', 'List providers', () => {
+        const providers = FLOWORKOS_Voice.listProviders();
+        if (!providers || providers.length < 4) throw `Expected ≥4, got ${providers?.length}`;
+        return `${providers.length} providers: ${providers.map(p => p.name).join(', ')}`;
+    });
+
+    test('Session', 'Create and get session', () => {
+        const session = FLOWORKOS_Sessions.createSession({ title: 'Test Session' });
+        if (!session || !session.id) throw 'No session created';
+        const current = FLOWORKOS_Sessions.getCurrentSession();
+        if (current.id !== session.id) throw 'Current session mismatch';
+        return `Created "${session.title}" (${session.id}) ✓`;
+    });
+
+    test('MCP', 'Register virtual server', () => {
+        const result = FLOWORKOS_MCP.registerVirtualServer({
+            id: 'test-server', name: 'Test MCP',
+            tools: [{ name: 'test_tool', description: 'A test tool' }],
+            handlers: { test_tool: (args) => 'test result' },
+        });
+        if (result.status !== 'ok') throw `Failed: ${result.error}`;
+        const tools = FLOWORKOS_MCP.listAllTools();
+        if (tools.length < 1) throw 'No tools registered';
+        FLOWORKOS_MCP.disconnect('test-server');
+        return `Server registered with ${tools.length} tool(s) ✓`;
+    });
+
+    test('Model Failover', 'Get failover status', () => {
+        const status = FLOWORKOS_ModelFailover.getFailoverStatus();
+        if (!status) throw 'No status returned';
+        return `Providers: ${JSON.stringify(status.providerStatus || status).slice(0, 80)}`;
+    });
+
+    // ═══ Run All Tests ═══
+    function runTests() {
+        const resultsDiv = document.getElementById('results');
+        const summaryDiv = document.getElementById('summary');
+        const groups = {};
+        let passed = 0, failed = 0, total = tests.length;
+
+        for (const t of tests) {
+            if (!groups[t.group]) groups[t.group] = [];
+            let status, detail, cls;
+            try {
+                detail = t.fn();
+                status = '✅ PASS';
+                cls = 'pass';
+                passed++;
+            } catch (err) {
+                detail = String(err);
+                status = '❌ FAIL';
+                cls = 'fail';
+                failed++;
+            }
+            groups[t.group].push({ name: t.name, status, detail, cls });
+        }
+
+        let html = '';
+        for (const [group, items] of Object.entries(groups)) {
+            html += `<div class="test-group">`;
+            html += `<div class="test-group-header">${group}</div>`;
+            for (const item of items) {
+                html += `<div class="test-item">
+                    <span class="icon">${item.cls === 'pass' ? '✅' : '❌'}</span>
+                    <span class="name">${item.name}</span>
+                    <span class="status ${item.cls}">${item.status}</span>
+                    <span class="detail">${item.detail}</span>
+                </div>`;
+            }
+            html += `</div>`;
+        }
+        resultsDiv.innerHTML = html;
+
+        const allPass = failed === 0;
+        summaryDiv.className = allPass ? 'all-pass' : 'has-fail';
+        summaryDiv.innerHTML = allPass
+            ? `🎉 ALL ${passed}/${total} TESTS PASSED`
+            : `⚠️ ${passed}/${total} passed, ${failed} failed`;
+    }
+
+    // Run after a short delay to let all modules initialize
+    setTimeout(runTests, 500);
+    </script>
+</body>
+</html>

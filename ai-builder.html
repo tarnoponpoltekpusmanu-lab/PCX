@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Assistant</title>
+    <link rel="stylesheet" href="./style_ai.css">
+    <link rel="stylesheet" href="./node_modules/xterm/css/xterm.css" />
+</head>
+
+<body style="margin:0; height: 100vh; display: flex; flex-direction: column; background: #09090b; overflow: hidden;">
+
+    <div id="ai-builder-view" style="display: flex; flex-direction: column; width: 100vw; height: 100vh;">
+        <div class="header" style="border-bottom: 2px solid #7C3AED; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; background: linear-gradient(135deg, #0F0F1A 0%, #1A0F2E 100%);">
+            <div class="header-left" style="display: flex; align-items: center; gap: 12px;">
+                <div>
+                    <h1 style="font-size: 1rem; text-transform: uppercase; letter-spacing: 2px; color: #B794F6; margin:0;">AI Assistant</h1>
+                    <div id="header-subtitle" style="font-size: 0.7rem; color: #666; margin-top: 2px;">Flowork OS — Chat, Build, Automate</div>
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <!-- IDE-only toolbar items (hidden in chat mode) -->
+                <div id="toolbar-ide-items" style="display: none; gap: 10px; align-items: center;">
+                    <button class="btn" style="background: rgba(124,58,237,0.15); border: 1px solid #7C3AED; color: #B794F6; padding: 4px 10px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 3px;" onmouseover="this.style.background='rgba(124,58,237,0.3)'" onmouseout="this.style.background='rgba(124,58,237,0.15)'" onclick="if(window.showChatMode) window.showChatMode()" title="Switch back to File Manager &amp; Chat">📁 Files</button>
+                    <select id="select-template" class="form-input" style="padding: 4px 8px; font-size: 0.75rem; border-radius: 4px; background: #111; color: #B794F6; border: 1px solid #333; cursor: pointer;">
+                        <option value="">Start Empty Project</option>
+                        <option value="vite-react-ts">Vite + React (TS)</option>
+                        <option value="nextjs-app">Next.js (App Router)</option>
+                        <option value="vanilla-html">Vanilla HTML/JS</option>
+                    </select>
+                    <label style="display: flex; align-items: center; gap: 4px; font-size: 0.7rem; color: #FFF; background: rgba(52, 211, 153, 0.1); padding: 4px 8px; border-radius: 4px; border: 1px solid rgba(52, 211, 153, 0.3); cursor: pointer;" title="Auto-reload active preview tab when AI writes files">
+                        <input type="checkbox" id="toggle-live-reload" checked style="accent-color: #34D399;">
+                        Live Reload
+                    </label>
+                    <button id="btn-undo" class="btn" disabled style="background: rgba(245, 158, 11, 0.1); border: 1px solid #F59E0B; color: #F59E0B; padding: 6px 16px; border-radius: 6px; font-size: 0.8rem; font-weight: bold; cursor: pointer; transition: all 0.2s; position: relative;" onmouseover="this.style.background='rgba(245, 158, 11, 0.2)'" onmouseout="this.style.background='rgba(245, 158, 11, 0.1)'" onclick="if(window.restoreCheckpoint) window.restoreCheckpoint()" title="No checkpoints">↩ Undo<span class="undo-badge" style="display:none; position:absolute; top:-6px; right:-6px; background:#EF4444; color:#fff; font-size:0.55rem; min-width:16px; height:16px; border-radius:50%; align-items:center; justify-content:center; font-weight:bold;">0</span></button>
+                    <button class="btn" style="background: rgba(16, 185, 129, 0.1); border: 1px solid #10B981; color: #10B981; padding: 6px 16px; border-radius: 6px; font-size: 0.8rem; font-weight: bold; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(16, 185, 129, 0.2)'" onmouseout="this.style.background='rgba(16, 185, 129, 0.1)'" onclick="if(window.executeCompilerFromUI) window.executeCompilerFromUI()">📦 Build .EXE</button>
+                </div>
+                <span id="ai-mode-indicator" class="badge badge-ai" style="font-size: 0.6rem; padding: 3px 8px; border-radius: 10px; font-weight: bold; background: #7C3AED; color: #fff;">CHAT MODE</span>
+                <button id="btn-toggle-sidebar" style="background: rgba(124,58,237,0.2); border: 1px solid #7C3AED; color: #B794F6; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#7C3AED';this.style.color='#FFF'" onmouseout="this.style.background='rgba(124,58,237,0.2)';this.style.color='#B794F6'" onclick="const sb=document.querySelector('.panel-right-sidebar');if(sb.style.display==='none'){sb.style.display='flex';this.innerText='◁ Hide'}else{sb.style.display='none';this.innerText='▷ Show'}">◁ Hide</button>
+            </div>
+        </div>
+
+        <div class="main" style="display: flex; flex-direction: row; gap: 0; flex: 1; height: calc(100% - 60px);">
+
+            <!-- ═══ FILE MANAGER PANEL (default visible — chat mode) ═══ -->
+            <div id="panel-file-manager" style="flex: 1; background: #0A0A10; border-right: 1px solid #1A1A2E; display: flex; flex-direction: column; transition: all 0.3s ease;">
+                <div style="background: linear-gradient(135deg, #111 0%, #0D0D18 100%); padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1A1A2E;">
+                    <h3 style="margin:0; font-size: 0.85rem; color: #B794F6; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 6px;">📁 File Manager</h3>
+                    <div style="display: flex; gap: 4px;">
+                        <button class="btn btn-outline" style="padding: 2px 6px; font-size: 0.65rem; background: rgba(124,58,237,0.15); border: 1px solid #7C3AED; color: #B794F6; border-radius: 4px; cursor: pointer;" onclick="if(window.refreshFileManager) window.refreshFileManager()" title="Refresh Files">🗘</button>
+                        <label style="padding: 2px 8px; font-size: 0.65rem; background: rgba(16,185,129,0.15); border: 1px solid #10B981; color: #34D399; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 3px;" title="Upload files to workspace">
+                            ＋ Add
+                            <input type="file" id="fm-upload-input" multiple style="display:none;" onchange="if(window.handleFileManagerUpload) window.handleFileManagerUpload(this.files)">
+                        </label>
+                        <button class="btn btn-outline" style="padding: 2px 8px; font-size: 0.65rem; background: rgba(59,130,246,0.15); border: 1px solid #3B82F6; color: #60A5FA; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 3px;" onclick="if(window.showIDEMode) window.showIDEMode()" title="Switch to Code Editor">
+                            ⌨️ Code
+                        </button>
+                    </div>
+                </div>
+                <div id="fm-path-bar" style="padding: 7px 12px; background: #0D0D14; border-bottom: 1px solid #1A1A2E; font-size: 0.72rem; color: #555; display: flex; align-items: center; gap: 2px; overflow-x: auto; white-space: nowrap; scrollbar-width: thin; scrollbar-color: #7C3AED #0D0D14;">
+                    <span style="color: #7C3AED;">📂</span>
+                    <span id="fm-current-path">workspace/</span>
+                </div>
+                <div id="fm-file-list" style="flex: 1; overflow-y: auto; padding: 8px; font-size: 0.8rem; color: #CCC;">
+                    <div style="color: #444; text-align: center; padding: 40px 10px; font-size: 0.8rem;">
+                        <div style="font-size: 2rem; margin-bottom: 8px; opacity: 0.4;">📂</div>
+                        Loading workspace files...
+                    </div>
+                </div>
+                <div id="fm-status-bar" style="padding: 6px 12px; background: #111; border-top: 1px solid #1A1A2E; font-size: 0.65rem; color: #555; display: flex; justify-content: space-between;">
+                    <span id="fm-file-count">0 files</span>
+                    <span id="fm-total-size">0 KB</span>
+                </div>
+            </div>
+
+            <!-- ═══ IDE PANELS (hidden by default — shown in code mode) ═══ -->
+            <div id="panel-ide-wrapper" style="display: none; flex: 1; flex-direction: row;">
+                <div id="panel-explorer" style="width: 250px; background: #0A0A10; border-right: 1px solid #1A1A2E; display: flex; flex-direction: column; transition: width 0.3s ease;">
+                    <div class="preview-header" style="background: #111; padding: 8px 15px; display: flex; justify-content: space-between; align-items: center;">
+                        <h3 style="margin:0; font-size: 0.9rem; color: #FFF; text-transform: uppercase; letter-spacing: 1px;">Explorer</h3>
+                        <div>
+                            <button id="btn-refresh-fs" class="btn btn-outline" style="padding: 2px 6px; font-size: 0.65rem;" onclick="if(window.loadFileSystem) window.loadFileSystem()">🗘</button>
+                            <button class="btn btn-outline" style="padding: 2px 6px; font-size: 0.65rem; margin-left: 3px;" onclick="document.getElementById('panel-explorer').style.display='none'; document.getElementById('btn-show-explorer').style.display='block';">◀</button>
+                        </div>
+                    </div>
+                    <div id="fs-tree-container" style="padding: 10px; font-size: 0.85rem; color: #CCC; flex:1; overflow-y:auto; line-height: 1.6;">Loading File System...</div>
+                </div>
+
+                <div id="panel-editor" class="panel-left-code" style="flex: 1; display: flex; flex-direction: column; overflow: hidden; background: #1e1e1e;">
+                    <div class="preview-header" style="display: flex; align-items: center; justify-content: flex-start; gap: 10px;">
+                        <button id="btn-show-explorer" class="btn btn-outline" style="display:none; padding: 2px 8px; font-size: 0.65rem;" onclick="document.getElementById('panel-explorer').style.display='flex'; this.style.display='none';">▶ Explorer</button>
+                        <h3 style="margin:0;">Workspace Editor</h3>
+                        <span id="file-count" style="font-size: 0.7rem; color: #444; margin-left: auto;">0 files</span>
+                    </div>
+
+                    <div class="preview-tabs" id="preview-tabs" style="display: flex; overflow-x: auto; white-space: nowrap; flex-wrap: nowrap; overflow-y: hidden; scrollbar-width: thin; scrollbar-color: #7C3AED #1e1e1e; padding-bottom: 2px;"></div>
+
+                    <div class="preview-content" id="preview-content" style="flex:1; overflow:hidden; position:relative;">
+
+                        <div id="panel-roadmap-mid" style="display: none; flex:1; overflow-y:auto; padding: 12px; background: #09090b; height: 100%;">
+                            <div class="roadmap-list" id="roadmap-list">
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">🗺️</div>
+                                    <div class="empty-state-text">No roadmap available. Ask AI to plan first.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="empty-state" id="empty-state-code" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px;">
+                            <div style="width: 140px; height: 140px; opacity: 0.85;">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="140" height="140">
+                                    <defs>
+                                        <linearGradient id="core_grad" x1="0%" y1="100%" x2="100%" y2="0%">
+                                            <stop offset="0%" stop-color="#2d2f45"/><stop offset="50%" stop-color="#706bf3"/><stop offset="100%" stop-color="#54d7f6"/>
+                                        </linearGradient>
+                                        <filter id="spinner_glow" x="-50%" y="-50%" width="200%" height="200%">
+                                            <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur"/>
+                                            <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 3 -1" result="brightBlur"/>
+                                            <feMerge><feMergeNode in="brightBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                                        </filter>
+                                    </defs>
+                                    <circle cx="256" cy="256" r="230" fill="none" stroke="#54d7f6" stroke-width="8" stroke-linecap="round" stroke-dasharray="200 150 50 150" filter="url(#spinner_glow)">
+                                        <animateTransform attributeName="transform" type="rotate" from="0 256 256" to="360 256 256" dur="3s" repeatCount="indefinite"/>
+                                    </circle>
+                                    <circle cx="256" cy="256" r="200" fill="none" stroke="#706bf3" stroke-width="10" stroke-linecap="round" stroke-dasharray="100 80 30 80 100 80" filter="url(#spinner_glow)" opacity="0.8">
+                                        <animateTransform attributeName="transform" type="rotate" from="360 256 256" to="0 256 256" dur="2.5s" repeatCount="indefinite"/>
+                                    </circle>
+                                    <g transform="translate(102, 102) scale(0.6)">
+                                        <path d="M100 80 L 220 80 L 220 200 L 160 200 L 160 432 L 100 432 Z" fill="url(#core_grad)" stroke="#3a3962" stroke-width="4"/>
+                                        <path d="M260 80 L 412 80 L 412 180 L 260 180 Z" fill="#54d7f6" opacity="0.9"/>
+                                        <path d="M260 220 L 360 220 L 360 320 L 260 320 Z" fill="#706bf3" opacity="0.9"/>
+                                        <path d="M220 130 L 260 130" stroke="#ffd700" stroke-width="8" stroke-linecap="round"/>
+                                        <path d="M220 270 L 260 270" stroke="#ffd700" stroke-width="8" stroke-linecap="round"/>
+                                    </g>
+                                </svg>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 1.8rem; font-weight: 800; background: linear-gradient(135deg, #706bf3, #54d7f6); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 3px; margin-bottom: 8px;">FLOWORK</div>
+                                <div style="font-size: 0.85rem; color: #555; letter-spacing: 1px;">AI-Powered Autonomous Operating System</div>
+                                <div style="font-size: 0.7rem; color: #333; margin-top: 6px;">Ask the AI to build something incredible ✨</div>
+                            </div>
+                        </div>
+
+                        <div id="code-view" style="display: none; width:100%; height:100%;"></div>
+                    </div>
+
+                    <div id="problems-panel" style="border-top: 1px solid #1A1A2E; background: #0A0A10; max-height: 150px; overflow: hidden; display: flex; flex-direction: column;">
+                        <div style="padding: 6px 14px; display: flex; align-items: center; justify-content: space-between; background: #111; cursor: pointer; user-select: none;" onclick="const list = document.getElementById('problems-list'); list.style.display = list.style.display === 'none' ? 'block' : 'none';">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="font-size: 0.75rem; color: #888; text-transform: uppercase; letter-spacing: 1px; font-weight: bold;">⚠️ Problems</span>
+                                <span id="problems-badge" style="display: none; background: #EF4444; color: #fff; font-size: 0.65rem; font-weight: bold; padding: 1px 7px; border-radius: 10px; min-width: 18px; text-align: center; align-items: center; justify-content: center;"></span>
+                                <button id="btn-auto-fix" onclick="event.stopPropagation(); if(window.triggerManualHeal) window.triggerManualHeal()" style="display: none; background: #7C3AED; color: white; border: none; padding: 2px 8px; border-radius: 4px; font-size: 0.6rem; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#8B5CF6'" onmouseout="this.style.background='#7C3AED'">✨ Fix with AI</button>
+                            </div>
+                            <span style="font-size: 0.6rem; color: #555;">click to toggle</span>
+                        </div>
+                        <div id="problems-list" style="overflow-y: auto; flex:1; padding: 4px 0; display: none;">
+                            <div style="color:#666; text-align:center; padding:20px; font-size:0.8rem;">No problems detected ✅</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-right-sidebar">
+                <div class="sidebar-top-tabs">
+                    <div class="settings-header" data-flowork-action="toggleSettings">
+                        <span>⚙️ Configurations</span>
+                        <span id="settings-chevron">▼</span>
+                    </div>
+                    <div class="settings-content" id="settings-content">
+                        <div class="form-group">
+                            <label class="form-label" data-i18n="provider_label">AI Model</label>
+                            <select id="select-provider">
+                                <optgroup label="🔵 Google Gemini">
+                                    <option value="gemini-2.5-flash" selected>Gemini 2.5 Flash (Recommended)</option>
+                                    <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+                                    <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+                                    <option value="gemini-2.0-flash-lite">Gemini 2.0 Flash-Lite (Budget)</option>
+                                </optgroup>
+                                <optgroup label="🟢 OpenAI">
+                                    <option value="gpt-5.4">GPT-5.4 (Flagship)</option>
+                                    <option value="gpt-5.4-mini">GPT-5.4 Mini (Fast)</option>
+                                    <option value="gpt-5.4-nano">GPT-5.4 Nano (Budget)</option>
+                                    <option value="gpt-4o">GPT-4o (Legacy)</option>
+                                    <option value="gpt-4o-mini">GPT-4o Mini (Legacy)</option>
+                                </optgroup>
+                                <optgroup label="🟠 Anthropic Claude">
+                                    <option value="claude-opus-4-20260217">Claude Opus 4 (Strongest)</option>
+                                    <option value="claude-sonnet-4-20260217">Claude Sonnet 4 (Balanced)</option>
+                                    <option value="claude-haiku-3-5-20241022">Claude Haiku 3.5 (Fast)</option>
+                                </optgroup>
+                                <optgroup label="🔴 xAI Grok">
+                                    <option value="grok-4.20">Grok 4.20 (Flagship)</option>
+                                    <option value="grok-4.1-fast">Grok 4.1 Fast (Budget)</option>
+                                </optgroup>
+                                <optgroup label="🟣 DeepSeek">
+                                    <option value="deepseek-chat">DeepSeek Chat</option>
+                                    <option value="deepseek-reasoner">DeepSeek Reasoner</option>
+                                </optgroup>
+                                <optgroup label="⚡ Groq (Ultra-Fast)">
+                                    <option value="groq-llama-3.3-70b-versatile">Llama 3.3 70B</option>
+                                    <option value="groq-llama-3.1-8b-instant">Llama 3.1 8B Instant</option>
+                                    <option value="groq-deepseek-r1-distill-llama-70b">DeepSeek R1 70B (Groq)</option>
+                                </optgroup>
+                                <optgroup label="🔷 Mistral AI">
+                                    <option value="mistral-large-latest">Mistral Large 3 (Flagship)</option>
+                                    <option value="mistral-small-latest">Mistral Small 3.2</option>
+                                    <option value="magistral-medium-latest">Magistral Medium (Reasoning)</option>
+                                </optgroup>
+                                <optgroup label="🌐 Together AI">
+                                    <option value="together-meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8">Llama 4 Maverick</option>
+                                    <option value="together-Qwen/Qwen3.5-9B">Qwen 3.5 9B</option>
+                                    <option value="together-deepseek-ai/DeepSeek-V3.1">DeepSeek V3.1 (Together)</option>
+                                </optgroup>
+                                <optgroup label="🔥 Fireworks AI">
+                                    <option value="fireworks-accounts/fireworks/models/llama4-maverick-instruct-basic">Llama 4 Maverick (FW)</option>
+                                    <option value="fireworks-accounts/fireworks/models/deepseek-v3">DeepSeek V3 (FW)</option>
+                                </optgroup>
+                                <optgroup label="🧠 Cohere">
+                                    <option value="cohere-command-a-03-2025">Command A (Flagship)</option>
+                                    <option value="cohere-command-r-plus-08-2024">Command R+ (Legacy)</option>
+                                </optgroup>
+                                <optgroup label="🏠 Local (Ollama)">
+                                    <option value="ollama-llama3">Ollama — Llama 3</option>
+                                    <option value="ollama-deepseek-coder-v2">Ollama — DeepSeek Coder</option>
+                                    <option value="ollama-qwen2.5-coder">Ollama — Qwen 2.5 Coder</option>
+                                    <option value="ollama-custom">Ollama — Custom Model</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        <!-- API Key: loaded from .env file -->
+                        <input type="hidden" id="input-api-key" value="">
+                        <div id="env-status" style="font-size: 0.65rem; color: #666; margin-top: 4px; padding: 4px 0; cursor: pointer;" onclick="if(window.FLOWORKOS_Env) { const log = FLOWORKOS_Env.getSetupLog(); alert(log.map(l=>l.message).join('\n')); }" title="Click to see env setup log">📁 Config: .env</div>
+                        <!-- Hidden fields — set dynamically by welcome screen buttons -->
+                        <input type="hidden" id="input-app-name" value="">
+                        <select id="select-language" style="display:none">
+                            <option value="javascript">Node.js</option>
+                            <option value="python">Python</option>
+                            <option value="golang">Golang</option>
+                            <option value="cpp">C++</option>
+                            <option value="ruby">Ruby</option>
+                            <option value="c">C</option>
+                        </select>
+                        <select id="select-output-type" style="display:none">
+                            <option value="app">📱 Build Application</option>
+                            <option value="node">⚡ Build Workflow Node</option>
+                            <option value="run_app">🚀 Run &amp; Operate App</option>
+                            <option value="run_task">🎯 Execute Task</option>
+                            <option value="browser">🌐 Browser Automation</option>
+                        </select>
+                        <div id="display-app-name" style="display:none"></div>
+                        <!-- Hidden email fields for backward compatibility -->
+                        <input type="hidden" id="input-email-host" value="">
+                        <input type="hidden" id="input-email-port" value="993">
+                        <input type="hidden" id="input-email-user" value="">
+                        <input type="hidden" id="input-email-password" value="">
+
+                        <hr style="border: none; border-top: 1px dashed #272730; margin: 8px 0;">
+                        <button onclick="if(window.manualSaveConfig) window.manualSaveConfig()" style="width: 100%; padding: 9px 12px; font-size: 0.8rem; font-weight: 600; background: linear-gradient(135deg, #7C3AED, #6D28D9); color: #fff; border: none; border-radius: 6px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; letter-spacing: 0.5px;" onmouseover="this.style.background='linear-gradient(135deg, #8B5CF6, #7C3AED)'; this.style.boxShadow='0 4px 12px rgba(124,58,237,0.3)'" onmouseout="this.style.background='linear-gradient(135deg, #7C3AED, #6D28D9)'; this.style.boxShadow='none'">💾 Save Config</button>
+                    </div>
+
+                    <div class="preview-tabs" id="workspace-tabs" style="border-top: 1px solid #1A1A2E;">
+                        <button class="preview-tab active" data-flowork-action="switchTab" data-target="terminal" style="width: 100%; cursor: default;">Terminal Log</button>
+                    </div>
+
+                    <div class="preview-content" style="flex: 1; overflow: hidden; display: flex; flex-direction: column;">
+                        <div class="workspace-panel active" id="panel-terminal" style="flex:1; overflow:hidden; padding: 0;">
+                            <div id="terminal-view" style="width:100%; height:100%; background: #000;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar-bottom-chat">
+                    <div class="preview-header" style="border-top: 1px solid #1A1A2E; display: flex; justify-content: space-between;">
+                        <h3 style="color: #4CAF50;">Agent Chat</h3>
+                        <button id="btn-clear-chat" class="badge" style="background:#EF4444; color:#fff; border:none; cursor:pointer;" title="Start New Conversation">⟳ New</button>
+                    </div>
+                    <div class="chat-history" id="chat-history">
+                        <!-- Welcome screen rendered by JS -->
+                    </div>
+
+                    <div class="chat-input-area" style="padding-bottom: 80px; position: relative; display: flex; align-items: center;">
+
+                        <div id="chat-image-preview" style="display: none; position: absolute; top: -65px; left: 15px; background: #1e1e1e; padding: 4px; border-radius: 8px; border: 1px solid #444; box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 10;">
+                            <img id="chat-image-img" src="" style="height: 50px; border-radius: 4px; object-fit: cover;">
+                            <span id="chat-image-remove" style="position: absolute; top: -8px; right: -8px; background: #EF4444; color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; text-align: center; cursor: pointer; line-height: 18px; font-weight: bold; border: 2px solid #1e1e1e;">X</span>
+                        </div>
+
+                        <input type="file" id="chat-image-upload" accept="image/png, image/jpeg, image/webp, image/gif, image/svg+xml, video/mp4, video/webm, application/pdf, text/plain, text/csv, application/json, .py, .js, .ts, .go, .rb, .c, .cpp, .html, .css" style="display: none;">
+
+                        <button id="btn-attach" style="background: transparent; border: none; color: #888; font-size: 1.4rem; cursor: pointer; padding: 10px 5px 10px 10px; transition: 0.2s;" onmouseover="this.style.color='#B794F6'" onmouseout="this.style.color='#888'" title="Attach Screenshot/Image">
+                            📎
+                        </button>
+
+                        <textarea id="chat-input" placeholder="Describe what to build or fix..." rows="1" style="flex: 1;"></textarea>
+
+                        <button id="btn-send" class="btn-send" data-flowork-action="sendMessage" onclick="if(window.sendMessage) window.sendMessage()">
+                            <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" /></svg>
+                        </button>
+                    </div>
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const path = require('path');
+        const nodeRequire = global.require('module').createRequire(__dirname);
+        const amdLoaderPath = path.join(__dirname, 'node_modules', 'monaco-editor', 'min', 'vs', 'loader.js');
+
+        // Simpan require asli bawaan Node/Electron
+        window.originalNodeRequire = window.require;
+
+        // Panggil AMD loader milik Monaco
+        const amdLoader = window.originalNodeRequire(amdLoaderPath);
+        amdLoader.require.config({
+            baseUrl: 'file:///' + path.join(__dirname, 'node_modules', 'monaco-editor', 'min').replace(/\\/g, '/')
+        });
+
+        // Disable temporarily node module loader inside browser window for Monaco to load smoothly
+        self.module = undefined;
+
+        amdLoader.require(['vs/editor/editor.main'], function() {
+            // Monaco siap! Agent builder akan mendeteksi window.monaco
+            window.isMonacoReady = true;
+            // Kembalikan require asli node js
+            self.module = { exports: {} };
+        });
+    </script>
+    <!-- ═══ BRAIN LOADER — Loads from brain/ (DEV) or brain.zip (PROD) ═══ -->
+    <script src="./connector/FLOWORKOS_brain_loader.js"></script>
+    <script src="./connector/FLOWORKOS_connector.js"></script>
+</body>
+
+</html>

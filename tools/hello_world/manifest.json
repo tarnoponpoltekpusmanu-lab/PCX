@@ -1,0 +1,18 @@
+{
+  "name": "hello_world",
+  "version": "1.0.0",
+  "description": "Test tool — proves the Connector auto-detects and hot-loads tools",
+  "runtime": "auto",
+  "entry": "index.js",
+  "capabilities": ["hello", "greet"],
+  "input_schema": {
+    "name": { "type": "string", "required": false, "default": "World" }
+  },
+  "output_schema": {
+    "message": { "type": "string" }
+  },
+  "permissions": [],
+  "trust_level": "sandbox",
+  "author": "flowork-test",
+  "created": "2026-04-02T22:45:00Z"
+}

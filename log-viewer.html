@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Flowork Engine Terminal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: #050505;
+            color: #d1d1d1;
+            font-family: 'Fira Code', monospace;
+            margin: 0; padding: 15px;
+            font-size: 13px; line-height: 1.5;
+            overflow: hidden;
+            display: flex; flex-direction: column; height: 100vh; box-sizing: border-box;
+        }
+        #terminal {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-bottom: 20px;
+        }
+        .line { margin-bottom: 4px; display: flex; gap: 10px; }
+        .time { color: #5c6370; min-width: 80px; }
+        .msg { word-break: break-all; }
+
+        /* Warna Log */
+        .type-error .msg { color: #e06c75; font-weight: bold; }
+        .type-warn .msg { color: #e5c07b; }
+        .type-success .msg { color: #98c379; }
+        .type-engine .msg { color: #61afef; }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-thumb { background: #232733; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div id="terminal"></div>
+
+    <script>
+        const { ipcRenderer } = require('electron');
+        const terminal = document.getElementById('terminal');
+
+        ipcRenderer.on('engine:receive-log', (event, data) => {
+            const line = document.createElement('div');
+            line.className = `line type-${data.type}`;
+
+            line.innerHTML = `
+                <span class="time">[${data.time}]</span>
+                <span class="msg">${data.text}</span>
+            `;
+
+            terminal.appendChild(line);
+
+            // Auto-scroll ke bawah
+            terminal.scrollTop = terminal.scrollHeight;
+
+            // Batasi 500 baris agar tidak berat
+            if (terminal.childElementCount > 500) {
+                terminal.removeChild(terminal.firstChild);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,371 @@
+{
+  "status": "success",
+  "query": "tiktok",
+  "category": "",
+  "tags": [],
+  "lang": "",
+  "results": [
+    {
+      "id": "browser-open-website-inject-cookies-v1",
+      "title": "How to Open Websites Inside Flowork and Login with Cookies",
+      "category": "browser",
+      "tags": [
+        "browser-automation",
+        "cookies",
+        "tiktok",
+        "login",
+        "import-cookies",
+        "open-browser-tab",
+        "workspace",
+        "file-manager",
+        "browserview",
+        "fallback",
+        "document-cookie",
+        "javascript-injection"
+      ],
+      "language": "javascript",
+      "summary": "Complete guide for opening websites as native BrowserView tabs inside the Flowork OS window and logging in via cookie injection. Covers the workspace/cookies/ folder system, the exact tool workflow (l",
+      "version": 2,
+      "score": 18,
+      "updated_at": "2026-04-01T11:22:49.466Z"
+    },
+    {
+      "id": "tiktok-automation-search-n8n",
+      "title": "TikTok Search Automation: n8n Case Study",
+      "category": "browser",
+      "tags": [
+        "tiktok",
+        "n8n",
+        "automation",
+        "cookies"
+      ],
+      "language": "javascript",
+      "summary": "",
+      "version": 1,
+      "score": 18,
+      "updated_at": "2026-04-01T14:28:26.621Z"
+    },
+    {
+      "id": "tiktok-automation-upload-guide",
+      "title": "TikTok Automation: Video Upload Workflow",
+      "category": "browser",
+      "tags": [
+        "tiktok",
+        "automation",
+        "upload"
+      ],
+      "language": "javascript",
+      "summary": "",
+      "version": 1,
+      "score": 18,
+      "updated_at": "2026-04-01T14:32:03.090Z"
+    },
+    {
+      "id": "flowork-os-complete-overview",
+      "title": "Flowork OS — Complete System Architecture Overview",
+      "category": "general",
+      "tags": [
+        "architecture",
+        "overview",
+        "engine",
+        "website",
+        "electron",
+        "cloudflare"
+      ],
+      "language": "javascript",
+      "summary": "Complete architecture of Flowork OS: a portable hybrid platform with Go Engine (main.go), Electron GUI (main.js), and Cloudflare Website. The engine communicates via REST API on Port 5000 and WebSocke",
+      "version": 2,
+      "score": 6,
+      "updated_at": "2026-04-01T09:12:28.756Z"
+    },
+    {
+      "id": "go-engine-bootstrap-lifecycle",
+      "title": "Go Engine (main.go) — Bootstrap Sequence & Lifecycle",
+      "category": "general",
+      "tags": [
+        "engine",
+        "go",
+        "fiber",
+        "bootstrap",
+        "lifecycle",
+        "port-5000"
+      ],
+      "language": "go",
+      "summary": "Deep dive into main.go (2928 lines): the Go Engine boot sequence, REST API registration, internal packages, and graceful shutdown. Covers initEngineDir, license check, port management, and all 40+ API",
+      "version": 2,
+      "score": 6,
+      "updated_at": "2026-04-01T09:12:30.835Z"
+    },
+    {
+      "id": "ai-builder-llm-code-generation",
+      "title": "AI Builder — LLM-Powered App & Node Generation",
+      "category": "general",
+      "tags": [
+        "ai",
+        "builder",
+        "llm",
+        "code-generation",
+        "agent",
+        "tools"
+      ],
+      "language": "javascript",
+      "summary": "The AI Builder is Flowork's autonomous code generation system. Mother AI uses 67 tools to create apps, nodes, and workflows. It can write files, execute commands, control browsers, manage git, and sel",
+      "version": 1,
+      "score": 4,
+      "updated_at": "2026-04-01T09:17:11.721Z"
+    },
+    {
+      "id": "app-dual-engine-pattern-v1",
+      "title": "Building Flowork Apps — The Dual-Engine Architecture",
+      "category": "app",
+      "tags": [
+        "app",
+        "dual-engine",
+        "manifest",
+        "schema",
+        "systembridge",
+        "architecture"
+      ],
+      "language": "javascript",
+      "summary": "Every Flowork app follows the Dual-Engine Architecture: an HTML/JS frontend (Online Mode) running in Chromium, and an optional Python/Node.js backend (Offline Mode) powered by the Go Engine. Apps must",
+      "version": 1,
+      "score": 4,
+      "updated_at": "2026-04-01T08:07:46.020Z"
+    },
+    {
+      "id": "authentication-wallet-system",
+      "title": "Authentication & Wallet System",
+      "category": "general",
+      "tags": [
+        "auth",
+        "wallet",
+        "authentication",
+        "login",
+        "web3"
+      ],
+      "language": "javascript",
+      "summary": "Flowork handles user authentication via traditional methods and Web3 wallet integration. The auth system manages JWT tokens, session persistence, and secure routes.",
+      "version": 1,
+      "score": 4,
+      "updated_at": "2026-04-01T09:26:05.803Z"
+    },
+    {
+      "id": "building-flowork-apps-dual-engine",
+      "title": "Building Flowork Apps — The Dual-Engine Architecture",
+      "category": "app",
+      "tags": [
+        "app",
+        "development",
+        "dual-engine",
+        "manifest",
+        "schema",
+        "packaging"
+      ],
+      "language": "javascript",
+      "summary": "Every Flowork app follows the Dual-Engine Architecture: an HTML/JS frontend (Online Mode) running in Chromium, and an optional Python/Node backend (Offline Mode). Each app must include schema.json, ic",
+      "version": 1,
+      "score": 4,
+      "updated_at": "2026-04-01T09:17:05.731Z"
+    },
+    {
+      "id": "cloudflare-ssr-seo-strategy",
+      "title": "Cloudflare SSR Strategy — SEO-Optimized Server Rendering",
+      "category": "general",
+      "tags": [
+        "ssr",
+        "seo",
+        "cloudflare",
+        "server-rendering",
+        "opengraph",
+        "schema"
+      ],
+      "language": "javascript",
+      "summary": "Flowork uses Cloudflare Functions to server-render HTML for SEO bots while maintaining SPA behavior for users. Each SSR function extracts Vue assets from index.html, fetches data from KV, and returns ",
+      "version": 1,
+      "score": 4,
+      "updated_at": "2026-04-01T09:22:56.835Z"
+    },
+    {
+      "id": "cloudflare-website-edge-platform",
+      "title": "Cloudflare Website — Edge-First Web Platform Architecture",
+      "category": "general",
+      "tags": [
+        "cloudflare",
+        "vue",
+        "spa",
+        "ssr",
+        "edge",
+        "website",
+        "kv"
+      ],
+      "language": "javascript",
+      "summary": "Architecture of the Flowork website: Vue 3 SPA with Vuetify, deployed on Cloudflare Pages. Uses Cloudflare Functions for SSR, KV for data storage, and a responsive layout system with desktop/mobile/we",
+      "version": 1,
+      "score": 4,
+      "updated_at": "2026-04-01T09:12:34.846Z"
+    },
+    {
+      "id": "electron-gui-desktop-shell",
+      "title": "Electron GUI — Desktop Shell & Browser Farm Architecture",
+      "category": "general",
+      "tags": [
+        "electron",
+        "gui",
+        "browser-farm",
+        "websocket",
+        "preload",
+        "desktop"
+      ],
+      "language": "javascript",
+      "summary": "Architecture of the Electron GUI (main.js, 677 lines): BrowserWindow management, WebSocket server on Port 5001, AI browser automation, system tray, splash screen, Dynamic Component Discovery, and the ",
+      "version": 1,
+      "score": 4,
+      "updated_at": "2026-04-01T09:12:32.862Z"
+    },
+    {
+      "id": "engine-website-communication",
+      "title": "Engine ↔ Website Communication — P2P Bridge & REST API",
+      "category": "general",
+      "tags": [
+        "engine",
+        "website",
+        "api",
+        "communication",
+        "bridge",
+        "p2p",
+        "websocket"
+      ],
+      "language": "javascript",
+      "summary": "How the Flowork Engine (Go, Port 5000) and Website (Vue SPA in Electron) communicate. Covers REST API calls, WebSocket bridge (Port 5001), preload.js bridge, systemBridge.js, and the nativeBridge util",
+      "version": 1,
+      "score": 4,
+      "updated_at": "2026-04-01T09:12:36.895Z"
+    },
+    {
+      "id": "general-ai-builder-open-app-architecture-v1",
+      "title": "AI Builder: How to Open and Test Apps Inside Flowork OS",
+      "category": "general",
+      "tags": [
+        "ai-builder",
+        "open-app",
+        "browserview",
+        "testing",
+        "flowork-architecture",
+        "websocket"
+      ],
+      "language": "javascript",
+      "summary": "Complete guide on how the AI Builder (AI Mother) opens, tests, and manages apps INSIDE the Flowork main window using BrowserView tabs via WebSocket IPC. Covers the open_app tool, wsCommand bridge, Bro",
+      "version": 1,
+      "score": 4,
+      "updated_at": "2026-04-01T10:37:25.272Z"
+    },
+    {
+      "id": "general-ai-builder-system-v1",
+      "title": "AI Builder — How the AI Assistant Creates Apps & Nodes",
+      "category": "general",
+      "tags": [
+        "ai",
+        "builder",
+        "gemini",
+        "tools",
+        "agent",
+        "mode-router"
+      ],
+      "language": "javascript",
+      "summary": "Architecture of the AI Builder system in Flowork. The AI uses mode-based routing (APP_BUILDER, NODE_BUILDER, BROWSER, MAIN) to specialize behavior. Each mode has different allowed tools and directives",
+      "version": 1,
+      "score": 4,
+      "updated_at": "2026-04-01T08:07:48.395Z"
+    },
+    {
+      "id": "general-engine-web-communication-v1",
+      "title": "Engine ↔ Web Communication — How Electron Connects to Go",
+      "category": "general",
+      "tags": [
+        "ipc",
+        "electron",
+        "communication",
+        "websocket",
+        "http",
+        "bridge"
+      ],
+      "language": "javascript",
+      "summary": "How the Flowork engine components communicate: Go Engine serves HTTP on :5000, Electron GUI manages BrowserViews, and the web frontend calls localhost:5000. WebSocket (port 5001) handles real-time eve",
+      "version": 1,
+      "score": 4,
+      "updated_at": "2026-04-01T08:07:50.607Z"
+    },
+    {
+      "id": "general-flowork-architecture-v1",
+      "title": "Flowork OS Architecture — Complete System Overview",
+      "category": "general",
+      "tags": [
+        "architecture",
+        "engine",
+        "electron",
+        "go",
+        "fiber",
+        "system-design"
+      ],
+      "language": "go",
+      "summary": "Complete architecture of Flowork OS: a portable hybrid platform with Go Engine (main.go), Electron GUI (main.js), and Cloudflare Website. The engine embeds all UI files into a single .exe, serves them",
+      "version": 1,
+      "score": 4,
+      "updated_at": "2026-04-01T08:07:45.381Z"
+    },
+    {
+      "id": "general-how-to-submit-kb-articles-v1",
+      "title": "How AI Publishes to the Knowledge Base (Article Structure & Workflow)",
+      "category": "general",
+      "tags": [
+        "knowledge-base",
+        "kb-publish",
+        "documentation",
+        "anti-hallucination",
+        "article-structure"
+      ],
+      "language": "javascript",
+      "summary": "Complete guide on the Knowledge Base article structure, how the AI auto-publishes articles after user confirmation, and the anti-hallucination FASE 0 → FASE 5 workflow. Covers kb_search, kb_read, kb_p",
+      "version": 1,
+      "score": 4,
+      "updated_at": "2026-04-01T10:45:21.147Z"
+    },
+    {
+      "id": "licensing-subscription-system",
+      "title": "Licensing & Subscription System — Free to Enterprise",
+      "category": "general",
+      "tags": [
+        "license",
+        "subscription",
+        "tier",
+        "payment",
+        "free",
+        "pro"
+      ],
+      "language": "go",
+      "summary": "Flowork uses a tiered licensing system: Free, Pro, and Enterprise. License tokens are verified against floworkos.com API, cached locally for offline use, and enforced by both the Engine and Website.",
+      "version": 1,
+      "score": 4,
+      "updated_at": "2026-04-01T09:22:54.788Z"
+    },
+    {
+      "id": "node-building-workflow-nodes-v1",
+      "title": "Building Workflow Nodes — Flowork Visual Flow Editor",
+      "category": "node",
+      "tags": [
+        "node",
+        "workflow",
+        "vue-flow",
+        "drag-drop",
+        "visual-programming"
+      ],
+      "language": "javascript",
+      "summary": "How to create custom workflow nodes for the Flowork visual flow editor. Nodes are the building blocks of drag-and-drop workflows. Each node requires a specific JSON/JS skeleton with inputs, outputs, a",
+      "version": 1,
+      "score": 4,
+      "updated_at": "2026-04-01T08:07:47.195Z"
+    }
+  ],
+  "total": 51,
+  "cache_version": "mng59x2c"
+}
